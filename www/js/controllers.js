@@ -1,4 +1,4 @@
-angular.module('synctrip.controllers', [])
+angular.module('synctrip.controllers', ['simpleLoginTools'])
 
 .controller('AppCtrl', function($scope) {
 })
@@ -15,4 +15,27 @@ angular.module('synctrip.controllers', [])
 })
 
 .controller('PlaylistCtrl', function($scope, $stateParams) {
+})
+
+.controller('AccountCtrl', function($scope, $stateParams, waitForAuth) {
+    waitForAuth.then(function() {
+      $scope.providers = ['Google']
+    });
+
+    $scope.login = function(provider, callback) {
+      console.log("Try logging in with provider '"+provider+"'...", callback);
+      $scope.err = null;
+      loginService.login(provider, '/', function(err, user) {
+        if(err) {
+          console.log("Error signing in: ", err);
+          $scope.auth = null;
+        } else {
+          console.log("Successfully signed in: ", user);
+          $rootScope.currentUser = user;
+          $route.reload();
+        }
+        $scope.err = err||null;
+        typeof(callback) === 'function' && callback(err, user);
+      });
+    };
 })

@@ -4,9 +4,10 @@
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
 // 'starter.controllers' is found in controllers.js
-angular.module('synctrip', ['ionic', 'synctrip.controllers'])
+angular.module('synctrip', ['ionic', 'synctrip.config', /*'synctrip.routes',*/ 'synctrip.filters', 'synctrip.services', 'synctrip.directives', 'synctrip.controllers',
+ 'simpleLoginTools', 'routeSecurity'])
 
-.run(function($ionicPlatform) {
+.run(['$ionicPlatform', 'loginService', '$rootScope', 'FBURL', function($ionicPlatform, loginService, $rootScope, FBURL) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -17,12 +18,24 @@ angular.module('synctrip', ['ionic', 'synctrip.controllers'])
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
     }
+
+    if( FBURL === 'https://INSTANCE.firebaseio.com' ) {
+       // double-check that the app has been configured
+       angular.element(document.body).html('<h1>Please configure app/js/config.js before running!</h1>');
+       setTimeout(function() {
+          angular.element(document.body).removeClass('hide');
+       }, 250);
+    }
+    else {
+       // establish authentication
+       $rootScope.auth = loginService.init('/');
+       $rootScope.FBURL = FBURL;
+    }
   });
-})
+}])
 
 .config(function($stateProvider, $urlRouterProvider) {
   $stateProvider
-
     .state('app', {
       url: "/app",
       abstract: true,
