@@ -1,4 +1,4 @@
-angular.module('starter.controllers', [])
+angular.module('synctrip.controllers', [])
 
 .controller('AppCtrl', function($scope) {
 })
