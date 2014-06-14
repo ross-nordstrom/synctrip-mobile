@@ -1,7 +1,8 @@
 {
-  "name": "HelloIonic",
+  "name": "SyncTrip",
   "private": "true",
   "devDependencies": {
-    "ionic": "driftyco/ionic-bower#1.0.0-beta.7"
+    "ionic": "driftyco/ionic-bower#1.0.0-beta.7",
+    "angularfire": "*"
   }
 }
