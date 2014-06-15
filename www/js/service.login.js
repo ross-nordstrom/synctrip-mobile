@@ -1,12 +1,12 @@
 angular.module('synctrip.service.login', ['firebase', 'synctrip.service.firebase'])
 
-   .factory('loginService', ['$rootScope', '$firebaseSimpleLogin', 'firebaseRef', 'profileCreator', '$timeout',
-      function($rootScope, $firebaseSimpleLogin, firebaseRef, profileCreator, $timeout) {
-         var auth = null;
-         return {
-            init: function() {
-               return auth = $firebaseSimpleLogin(firebaseRef());
-            },
+.factory('loginService', ['$rootScope', '$firebaseSimpleLogin', 'firebaseRef', 'profileCreator', '$timeout',
+   function($rootScope, $firebaseSimpleLogin, firebaseRef, profileCreator, $timeout) {
+      var auth = null;
+      return {
+         init: function() {
+            return auth = $firebaseSimpleLogin(firebaseRef());
+         },
 
             /**
              * @param {string} email
@@ -14,17 +14,35 @@ angular.module('synctrip.service.login', ['firebase', 'synctrip.service.firebase
              * @param {Function} [callback]
              * @returns {*}
              */
-            login: function(email, pass, callback) {
+             login: function(provider, callback) {
+               assertAuth();
+               auth.$login(provider, {
+                rememberMe: true,
+                scope: 'https://www.googleapis.com/auth/plus.login'
+             }).then(function(user) {
+               if( callback ) {
+                  callback(null, user);
+               }
+            }, callback);
+          },
+
+            /**
+             * @param {string} email
+             * @param {string} pass
+             * @param {Function} [callback]
+             * @returns {*}
+             */
+             loginEmail: function(email, pass, callback) {
                assertAuth();
                auth.$login('password', {
                   email: email,
                   password: pass,
                   rememberMe: true
                }).then(function(user) {
-                     if( callback ) {
-                        callback(null, user);
-                     }
-                  }, callback);
+                  if( callback ) {
+                     callback(null, user);
+                  }
+               }, callback);
             },
 
             logout: function() {
@@ -59,9 +77,9 @@ angular.module('synctrip.service.login', ['firebase', 'synctrip.service.firebase
          }
       }])
 
-   .factory('profileCreator', ['firebaseRef', '$timeout', function(firebaseRef, $timeout) {
-      return function(id, email, callback) {
-         firebaseRef('users/'+id).set({email: email, name: firstPartOfEmail(email)}, function(err) {
+.factory('profileCreator', ['firebaseRef', '$timeout', function(firebaseRef, $timeout) {
+   return function(id, email, callback) {
+      firebaseRef('users/'+id).set({email: email, name: firstPartOfEmail(email)}, function(err) {
             //err && console.error(err);
             if( callback ) {
                $timeout(function() {
@@ -70,11 +88,11 @@ angular.module('synctrip.service.login', ['firebase', 'synctrip.service.firebase
             }
          });
 
-         function firstPartOfEmail(email) {
-            return ucfirst(email.substr(0, email.indexOf('@'))||'');
-         }
+      function firstPartOfEmail(email) {
+         return ucfirst(email.substr(0, email.indexOf('@'))||'');
+      }
 
-         function ucfirst (str) {
+      function ucfirst (str) {
             // credits: http://kevin.vanzonneveld.net
             str += '';
             var f = str.charAt(0).toUpperCase();
