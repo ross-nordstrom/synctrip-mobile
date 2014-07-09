@@ -42,6 +42,38 @@ angular.module('synctrip', ['ionic', 'synctrip.config', /*'synctrip.routes',*/ '
       templateUrl: "templates/menu.html"
     })
 
+    .state('app.welcome', {
+      url: "/welcome",
+      views: {
+        'main': {
+          templateUrl: "templates/welcome.html"
+        },
+        'left': {
+          templateUrl: "templates/publicLeft.html"
+        },
+        'right': {
+          templateUrl: "templates/accountMenu.html",
+          controller: 'AccountCtrl'
+        }
+      }
+    })
+
+    .state('app.about', {
+      url: "/about",
+      views: {
+        'main': {
+          templateUrl: "templates/about.html"
+        },
+        'left': {
+          templateUrl: "templates/publicLeft.html"
+        },
+        'right': {
+          templateUrl: "templates/accountMenu.html",
+          controller: 'AccountCtrl'
+        }
+      }
+    })
+
     .state('app.playlists', {
       url: "/playlists",
       views: {

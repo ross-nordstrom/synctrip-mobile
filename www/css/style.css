@@ -36,3 +36,10 @@
 .red{
   color: red !important;
 }
+
+img.banner {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+
+}
