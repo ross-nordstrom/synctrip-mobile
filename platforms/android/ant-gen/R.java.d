@@ -1,4 +1,4 @@
-/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-gen/com/ionicframework/starter/R.java \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-gen/co/rossn/synctrip/R.java \
  : /home/ross/Development/personal/synctrip-mobile/platforms/android/res/values/strings.xml \
 /home/ross/Development/personal/synctrip-mobile/platforms/android/res/drawable-land-ldpi/screen.png \
 /home/ross/Development/personal/synctrip-mobile/platforms/android/res/drawable-land-mdpi/screen.png \

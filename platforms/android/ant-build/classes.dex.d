@@ -1,5 +1,12 @@
 /home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes.dex : \
 /home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/org/apache/cordova/device/Device.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/co/rossn/synctrip/BuildConfig.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/co/rossn/synctrip/SyncTrip.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/co/rossn/synctrip/R$attr.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/co/rossn/synctrip/R$xml.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/co/rossn/synctrip/R.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/co/rossn/synctrip/R$drawable.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/co/rossn/synctrip/R$string.class \
 /home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/com/ionicframework/starter/BuildConfig.class \
 /home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/com/ionicframework/starter/R$attr.class \
 /home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/com/ionicframework/starter/R$xml.class \
