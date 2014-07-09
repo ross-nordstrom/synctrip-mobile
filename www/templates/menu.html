@@ -38,9 +38,10 @@
       </ion-list>
     </ion-content>
     <ion-content class="has-header" ng-show-auth="'login'">
-      <ion-list ng-repeat="provider in providers">
-        <ion-item nav-clear menu-close href="#" eat-click>
-          Logged In!
+      <ion-list>
+        <ion-item class="item item-avatar" href="#" eat-click>
+        <img src="{{auth.user.thirdPartyUserData.picture}}" ng-show="!!auth.user && !!auth.user.thirdPartyUserData && !!auth.user.thirdPartyUserData.picture"/>
+        <h2><i class="icon ion-social-{{auth.user.provider | lowercase}}"></i>&nbsp;{{auth.user.displayName}}</h2>
         </ion-item>
       </ion-list>
     </ion-content>
