@@ -16,7 +16,7 @@
       <h2><i class="icon ion-social-{{auth.user.provider | lowercase}}"></i>&nbsp;{{auth.user.displayName}}</h2>
       <h4>{{auth.user.email}}</h4>
     </ion-item>
-    <ion-item href="#" eat-click ng-click="logout()">
+    <ion-item href="#" nav-clear menu-close href="#/app/welcome" ng-click="logout()">
       <h2><i class="icon ion-log-out"></i>&nbsp;&nbsp;Sign Out</h2>
     </ion-item>
   </ion-list>

@@ -20,9 +20,11 @@ angular.module('synctrip.controllers', ['simpleLoginTools'])
     $scope.$watch('auth', $scope.kick);
   });
 
-  $scope.kick = function() {
+  $scope.kick = function(d) {
+    // console.log("STATE ", $state, $scope.auth);
       if( (!$state || !!$state.current.authRequired) && (!$scope.auth || !$scope.auth.user) ) {
         // Boot them!
+        // console.log("  BOOT")
         $state.go('app.welcome');
       }
     }
@@ -51,7 +53,7 @@ angular.module('synctrip.controllers', ['simpleLoginTools'])
       } else {
         console.log("Successfully signed in: ", user);
         $rootScope.currentUser = user;
-          // $route.reload();
+        $state.go('app.playlists')
         }
         $scope.err = err||null;
         typeof(callback) === 'function' && callback(err, user);
@@ -60,5 +62,6 @@ angular.module('synctrip.controllers', ['simpleLoginTools'])
 
   $scope.logout = function() {
     loginService.logout();
+    $state.go('app.welcome');
   }
 }])

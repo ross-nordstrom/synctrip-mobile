@@ -76,6 +76,7 @@ angular.module('synctrip', ['ionic', 'synctrip.config', /*'synctrip.routes',*/ '
 
     .state('app.playlists', {
       url: "/playlists",
+      authRequired: true,
       views: {
         'main': {
           templateUrl: "templates/playlists.html",
