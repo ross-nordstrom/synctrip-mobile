@@ -1,4 +1,18 @@
 /home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes.dex : \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/org/apache/cordova/inappbrowser/InAppBrowser$5$2.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/org/apache/cordova/inappbrowser/InAppBrowserDialog.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/org/apache/cordova/inappbrowser/InAppBrowser$5.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/org/apache/cordova/inappbrowser/InAppBrowser$3.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/org/apache/cordova/inappbrowser/InAppBrowser.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/org/apache/cordova/inappbrowser/InAppBrowser$5$1.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/org/apache/cordova/inappbrowser/InAppChromeClient.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/org/apache/cordova/inappbrowser/InAppBrowser$InAppBrowserClient.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/org/apache/cordova/inappbrowser/InAppBrowser$5$4.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/org/apache/cordova/inappbrowser/InAppBrowser$1.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/org/apache/cordova/inappbrowser/InAppBrowser$5$3.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/org/apache/cordova/inappbrowser/InAppBrowser$4.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/org/apache/cordova/inappbrowser/InAppBrowser$2.class \
+/home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/org/apache/cordova/inappbrowser/InAppBrowser$4$1.class \
 /home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/org/apache/cordova/device/Device.class \
 /home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/co/rossn/synctrip/BuildConfig.class \
 /home/ross/Development/personal/synctrip-mobile/platforms/android/ant-build/classes/co/rossn/synctrip/SyncTrip.class \
