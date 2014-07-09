@@ -74,13 +74,13 @@ angular.module('synctrip', ['ionic', 'synctrip.config', /*'synctrip.routes',*/ '
       }
     })
 
-    .state('app.playlists', {
-      url: "/playlists",
+    .state('app.trips', {
+      url: "/trips",
       authRequired: true,
       views: {
         'main': {
-          templateUrl: "templates/playlists.html",
-          controller: 'PlaylistsCtrl'
+          templateUrl: "templates/trips.html",
+          controller: 'TripsCtrl'
         },
         'left': {
           templateUrl: "templates/demoSide.html"
@@ -92,34 +92,25 @@ angular.module('synctrip', ['ionic', 'synctrip.config', /*'synctrip.routes',*/ '
       }
     })
 
-    .state('app.search', {
-      url: "/search",
+    .state('app.trip', {
+      url: "/trip",
+      authRequired: true,
       views: {
-        'main' :{
-          templateUrl: "templates/search.html"
+        'main': {
+          templateUrl: "templates/trip.html",
+          controller: 'TripCtrl'
+        },
+        'left': {
+          templateUrl: "templates/demoSide.html"
+        },
+        'right': {
+          templateUrl: "templates/accountMenu.html",
+          controller: 'AccountCtrl'
         }
       }
     })
 
-    .state('app.browse', {
-      url: "/browse",
-      views: {
-        'main' :{
-          templateUrl: "templates/browse.html"
-        }
-      }
-    })
-
-    .state('app.single', {
-      url: "/playlists/:playlistId",
-      views: {
-        'main' :{
-          templateUrl: "templates/playlist.html",
-          controller: 'PlaylistCtrl'
-        }
-      }
-    });
   // if none of the above states are matched, use this as the fallback
-  $urlRouterProvider.otherwise('/app/playlists');
+  $urlRouterProvider.otherwise('/app/welcome');
 });
 
