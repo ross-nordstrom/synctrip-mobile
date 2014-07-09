@@ -39,14 +39,30 @@ angular.module('synctrip', ['ionic', 'synctrip.config', /*'synctrip.routes',*/ '
     .state('app', {
       url: "/app",
       abstract: true,
-      templateUrl: "templates/menu.html",
-      controller: 'AppCtrl'
+      templateUrl: "templates/menu.html"
+    })
+
+    .state('app.playlists', {
+      url: "/playlists",
+      views: {
+        'main': {
+          templateUrl: "templates/playlists.html",
+          controller: 'PlaylistsCtrl'
+        },
+        'left': {
+          templateUrl: "templates/demoSide.html"
+        },
+        'right': {
+          templateUrl: "templates/accountMenu.html",
+          controller: 'AccountCtrl'
+        }
+      }
     })
 
     .state('app.search', {
       url: "/search",
       views: {
-        'menuContent' :{
+        'main' :{
           templateUrl: "templates/search.html"
         }
       }
@@ -55,17 +71,8 @@ angular.module('synctrip', ['ionic', 'synctrip.config', /*'synctrip.routes',*/ '
     .state('app.browse', {
       url: "/browse",
       views: {
-        'menuContent' :{
+        'main' :{
           templateUrl: "templates/browse.html"
-        }
-      }
-    })
-    .state('app.playlists', {
-      url: "/playlists",
-      views: {
-        'menuContent' :{
-          templateUrl: "templates/playlists.html",
-          controller: 'PlaylistsCtrl'
         }
       }
     })
@@ -73,7 +80,7 @@ angular.module('synctrip', ['ionic', 'synctrip.config', /*'synctrip.routes',*/ '
     .state('app.single', {
       url: "/playlists/:playlistId",
       views: {
-        'menuContent' :{
+        'main' :{
           templateUrl: "templates/playlist.html",
           controller: 'PlaylistCtrl'
         }
