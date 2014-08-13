@@ -1,12 +1,17 @@
 'use strict';
 
 angular.module('synctrip.service.trips', [])
-.factory('Trips', ['$q', '$firebase',
-  function($q, $firebase) {
+.factory('Trips', ['$q', '$firebase', 'fbutil',
+  function($q, $firebase, fbutil) {
     return {
       collection: function(user, cb) {
-        var indexedTrips = new FirebaseIndex(FireRef.users().child('/'+user.uid+'/trips'), FireRef.trips());
-        return $firebase(indexedTrips);
+        var ref = new Firebase.util.intersection( fbutil.ref('/users/'+user.uid+'/trips'), fbutil.ref('trips') );
+        // magic!
+        return $firebase(ref);
+
+
+        // var indexedTrips = new FirebaseIndex(FireRef.users().child('/'+user.uid+'/trips'), FireRef.trips());
+        // return $firebase(indexedTrips);
       }
       , find: function(tripId) {
         console.log("FIND ",tripId);

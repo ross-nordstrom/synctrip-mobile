@@ -1,0 +1,14 @@
+{
+  "name": "firebase-util",
+  "homepage": "https://github.com/firebase/firebase-util",
+  "version": "0.1.0",
+  "_release": "0.1.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.1.0",
+    "commit": "69707bcabeb42d6b335d42790f3812ad1ad5b8dc"
+  },
+  "_source": "git@github.com:firebase/firebase-util.git",
+  "_target": "*",
+  "_originalSource": "git@github.com:firebase/firebase-util.git"
+}

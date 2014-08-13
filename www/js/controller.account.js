@@ -34,7 +34,7 @@ angular.module('synctrip.controller.account', ['simpleLogin'])
   };
 
   $scope.logout = function() {
-    simpleLogin.logout();
+    loginService.logout();
     $scope.currentUser = null;
     $state.go('app.welcome');
   }

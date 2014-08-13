@@ -1,0 +1,131 @@
+{
+  "rules": {
+    "users": {
+      ".read": "auth != null",
+      "$userid": {
+        "profile": {
+          // Require the user to be logged in, and their credentials match, unless we're creating
+          // a new account from scratch.
+          ".write": "auth != null && (auth.id == $userid || auth.uid == $userid)"
+        },
+        "trips": {
+          "$tripid": {
+            // Same rules for writing to their trips, BUT owners of a trip can add the trip to that user
+            ".write": "auth != null &&
+              (
+                auth.id == $userid
+                || auth.uid == $userid
+                || root.child('trips').child($tripid).child('ownerId').val() == auth.uid
+                || root.child('trips').child($tripid).child('admins').hasChild(auth.uid)
+              )"
+          }
+        },
+        "$other": {
+          ".write": "auth != null && (auth.id == $userid || auth.uid == $userid)"
+        }
+      }
+    },
+    "trips": {
+      "$trip": {
+        ".read": "auth != null && (
+                                    data.child('ownerId').val() == auth.uid
+                                    || data.child('collaborators').hasChild(auth.uid)
+                                    || data.child('admins').hasChild(auth.uid)
+                                    || data.child('ownerId').val() == null
+                                  )",
+        ".write": "auth != null && (data.child('ownerId').val() == auth.uid
+                                    || data.child('collaborators').hasChild(auth.uid)
+                                    || data.child('admins').hasChild(auth.uid)
+                                    || data.child('ownerId').val() == null
+                                    )",
+
+        "name": {
+          ".validate": "(
+                          // The owner can edit destinations
+                          data.parent().child('ownerId').val() == auth.uid
+                          // but it doesn't matter if it's not being changed
+                          || data.val() == newData.val()
+                          // or if this didn't exist before
+                          || data.parent().child('ownerId').val() == null
+                        )
+                        && newData.val() != ''"
+        },
+        "description": {
+          ".validate": "(
+                          // The owner can edit destinations
+                          data.parent().child('ownerId').val() == auth.uid
+                          // but it doesn't matter if it's not being changed
+                          || data.val() == newData.val()
+                          // or if this didn't exist before
+                          || data.parent().child('ownerId').val() == null
+                          // but it doesn't matter if it's not being changed
+                          || data.val() == newData.val()
+                        )"
+        },
+        "destinations": {
+            ".validate": "(
+                            // The owner or an Admin can edit destinations
+                            data.parent().child('ownerId').val() == auth.uid
+                            || data.parent().child('admins').hasChild(auth.uid)
+                            // or if this didn't exist before
+                            || data.parent().child('ownerId').val() == null
+                            // but it doesn't matter if it's not being changed
+                            || data.val() == newData.val()
+                          )"
+        },
+        // "total_distance": {
+        //   ".write": "data.parent().child('ownerId').val() == auth.uid
+        //               || data.parent().child('admins').hasChild(auth.uid)",
+        //   ".validate": "newData.val() != null"
+        // },
+        // "total_duration": {
+        //   ".write": "data.parent().child('ownerId').val() == auth.uid
+        //               || data.parent().child('admins').hasChild(auth.uid)",
+        //   ".validate": "newData.val() != null"
+        // },
+        "ownerId": {
+          ".validate": "(
+                          // NO validations if it didn't exist before
+                          data.val() == null
+                          // The owner can edit destinations
+                          || data.parent().child('ownerId').val() == auth.uid
+                          // but it doesn't matter if it's not being changed
+                          || data.val() == newData.val()
+                        )
+                        && root.child('users').hasChild(newData.val())"
+        },
+        "admins": {
+          "$admin": {
+            ".validate": "(
+                            // The owner can add *a valid user* to the list of Admins
+                            data.parent().parent().child('ownerId').val() == auth.uid
+                            && root.child('users').hasChild($admin)
+                          ) || (
+                            // Don't bother checking if the data was already there (and isn't being changed)
+                            ( data.parent().hasChild($admin) && data.val() == newData.val() )
+                            // or if this didn't exist before
+                            || data.parent().child('ownerId').val() == null
+                            // but the collaborator themself can remove themselves
+                              || (auth.uid == $admin && data.parent().hasChild($admin))
+                          )"
+          }
+        },
+        "collaborators": {
+          "$collaborator": {
+            ".validate": "(newData.val() == null || root.child('users').hasChild($collaborator) )
+                          && (
+                              // The owner can add collaborators
+                              data.parent().parent().child('ownerId').val() == auth.uid
+                              // or admins
+                              || data.parent().parent().child('admins').hasChild(auth.uid)
+                              // but the collaborator themself can remove themselves
+                              || (auth.uid == $collaborator && data.parent().hasChild($collaborator))
+                              // Don't bother checking if the data was already there (and isn't being changed)
+                              || ( data.parent().hasChild($collaborator) && data.val() == newData.val() )
+                            )"
+          }
+        }
+      }
+    }
+  }
+}
