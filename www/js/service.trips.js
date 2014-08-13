@@ -5,34 +5,28 @@ angular.module('synctrip.service.trips', [])
   function($q, $firebase, fbutil) {
     return {
       collection: function(user, cb) {
-        var ref = new Firebase.util.intersection( fbutil.ref('/users/'+user.uid+'/trips'), fbutil.ref('trips') );
+        Firebase.util.logLevel(true);
+        var ref = new Firebase.util.intersection( fbutil.ref('/users/'+user.uid+'/trips'), fbutil.ref('/trips') );
+        // var ref = fbutil.ref('/users/'+user.uid+'/trips')
         // magic!
-        return $firebase(ref);
-
-
-        // var indexedTrips = new FirebaseIndex(FireRef.users().child('/'+user.uid+'/trips'), FireRef.trips());
-        // return $firebase(indexedTrips);
+        return $firebase(ref).$asArray();
       }
       , find: function(tripId) {
         console.log("FIND ",tripId);
         return FireRef.trips().child(tripId);
       }
       , create: function(trip, owner, cb) {
-        var deferred = $q.defer();
-        var name = FireRef.trips().push({
+        console.log("Trips services create: ", trip, owner);
+
+        var ref = fbutil.ref('/trips');
+        $firebase(ref).$push({
           name: trip.name,
           ownerId: owner.uid
-        }, cb).name()
-
-        // Index it so it will show up in the 'owner's list of trips
-        // 'name' contains the pushed data's Firebase ID
-        var indexedTrips = new FirebaseIndex(FireRef.users().child('/'+owner.uid+'/trips'), FireRef.trips());
-        indexedTrips.add(name, function(err) {
-          console.log("NEW TRIP INDEXED! Errors? ", err)
-        });
-
-        deferred.resolve(name);
-        return deferred.promise;
+        }).then(function(res) {
+          var ownerRef = fbutil.ref('/users/'+owner.uid+'/trips');
+          $firebase(ownerRef).$set(res.name(), 1);   // Key for the new ly created record
+        }/*, error handler */);
+        return
       }
       , removeTrip: function(tripId) {
         console.log("REMOVE ", tripId)
