@@ -1,12 +1,12 @@
 'use strict';
 
 angular.module('synctrip.service.trips', [])
-.factory('Trips', ['$q', 'angularFireCollection', 'FireRef',
-  function($q, angularFireCollection, FireRef) {
+.factory('Trips', ['$q', '$firebase',
+  function($q, $firebase) {
     return {
       collection: function(user, cb) {
         var indexedTrips = new FirebaseIndex(FireRef.users().child('/'+user.uid+'/trips'), FireRef.trips());
-        return angularFireCollection(indexedTrips);
+        return $firebase(indexedTrips);
       }
       , find: function(tripId) {
         console.log("FIND ",tripId);
@@ -60,7 +60,7 @@ angular.module('synctrip.service.trips', [])
       }
       , collaborators: function(tripId) {
         var indexedCollaborators = new FirebaseIndex(FireRef.trips().child('/'+tripId+'/collaborators'), FireRef.users());
-        return angularFireCollection(indexedCollaborators);
+        return $firebase(indexedCollaborators);
       }
       , addCollaborator: function(tripId, userId) {
         // Index that user on the trip as a collaborator
@@ -114,7 +114,7 @@ return;
       }
       , admins: function(tripId) {
         var indexedAdmins = new FirebaseIndex(FireRef.trips().child('/'+tripId+'/admins'), FireRef.users());
-        return angularFireCollection(indexedAdmins);
+        return $firebase(indexedAdmins);
       }
       , addAdmin: function(tripId, userId) {
         // Index that user on the trip as a admin

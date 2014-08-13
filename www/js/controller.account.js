@@ -1,18 +1,8 @@
-angular.module('synctrip.controller.account', ['simpleLoginTools'])
-.controller('AccountCtrl', ['$scope', '$rootScope', '$state', '$stateParams', 'waitForAuth', 'loginService', function($scope, $rootScope, $state, $stateParams, waitForAuth, loginService) {
-  waitForAuth.then(function() {
-    $scope.providers = ['Google']
-    $scope.$watch('auth', $scope.kick);
-  });
-
-  $scope.kick = function(d) {
-    // console.log("STATE ", $state, $scope.auth);
-      if( (!$state || !!$state.current.authRequired) && (!$scope.auth || !$scope.auth.user) ) {
-        // Boot them!
-        // console.log("  BOOT")
-        $state.go('app.welcome');
-      }
-    }
+angular.module('synctrip.controller.account', ['simpleLogin'])
+.controller('AccountCtrl', ['$scope', '$rootScope', '$state', '$stateParams', 'loginService',  'currentUser', function($scope, $rootScope, $state, $stateParams, loginService, currentUser) {
+  console.log("Current user? ", currentUser);
+  $scope.currentUser = currentUser;
+  $scope.providers = ['google'];
 
   $scope.login = function(provider, callback) {
     console.log("Try logging in with provider '"+provider+"'...", callback);
@@ -34,10 +24,8 @@ angular.module('synctrip.controller.account', ['simpleLoginTools'])
             error = 'Problem signing in';
             break;
         }
-        $scope.auth = { user: null, error: error };
       } else {
         console.log("Successfully signed in: ", user);
-        $rootScope.currentUser = user;
         $state.go('app.trips')
         }
         $scope.err = err||null;
@@ -46,7 +34,8 @@ angular.module('synctrip.controller.account', ['simpleLoginTools'])
   };
 
   $scope.logout = function() {
-    loginService.logout();
+    simpleLogin.logout();
+    $scope.currentUser = null;
     $state.go('app.welcome');
   }
 }])

@@ -1,20 +1,20 @@
 <header class="bar bar-header bar-balanced">
   <h1 class="title">Account</h1>
 </header>
-<ion-content class="has-header" ng-show-auth="['logout','error']">
+<ion-content class="has-header" ng-hide="currentUser">
   <ion-list ng-repeat="provider in providers">
     <ion-item nav-clear href="#" eat-click ng-click="login(provider)">
       <i class="icon ion-social-{{provider | lowercase}}"></i> Sign In with {{ provider }}
     </ion-item>
-    <ion-item class="energized" href="#" eat-click ng-show="auth.error">{{auth.error}}</ion-item>
+    <ion-item class="energized" href="#" eat-click ng-show="err">{{err}}</ion-item>
   </ion-list>
 </ion-content>
-<ion-content class="has-header" ng-show-auth="'login'">
+<ion-content class="has-header" ng-show="currentUser">
   <ion-list>
     <ion-item class="item item-avatar" href="#" eat-click>
-      <img src="{{auth.user.thirdPartyUserData.picture}}" ng-show="!!auth.user && !!auth.user.thirdPartyUserData && !!auth.user.thirdPartyUserData.picture"/>
-      <h2><i class="icon ion-social-{{auth.user.provider | lowercase}}"></i>&nbsp;{{auth.user.displayName}}</h2>
-      <h4>{{auth.user.email}}</h4>
+      <img src="{{currentUser.thirdPartyUserData.picture}}" ng-show="!!currentUser && !!currentUser.thirdPartyUserData && !!currentUser.thirdPartyUserData.picture"/>
+      <h2><i class="icon ion-social-{{currentUser.provider | lowercase}}"></i>&nbsp;{{currentUser.displayName}}</h2>
+      <h4>{{currentUser.email}}</h4>
     </ion-item>
     <ion-item href="#" nav-clear menu-close href="#/app/welcome" ng-click="logout()">
       <h2><i class="icon ion-log-out"></i>&nbsp;&nbsp;Sign Out</h2>

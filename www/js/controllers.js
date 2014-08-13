@@ -2,6 +2,6 @@
    'use strict';
 
    /* Controllers */
-   angular.module('synctrip.controllers', ['simpleLoginTools', 'synctrip.controller.trips', 'synctrip.controller.account'])
+   angular.module('synctrip.controllers', ['simpleLogin', 'synctrip.controller.trips', 'synctrip.controller.account'])
 
 })();

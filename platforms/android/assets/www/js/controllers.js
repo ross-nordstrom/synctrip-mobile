@@ -24,21 +24,7 @@ angular.module('synctrip.controllers', ['simpleLoginTools'])
 .controller('TripCtrl', function($scope, $stateParams) {
 })
 
-.controller('AccountCtrl', ['$scope', '$rootScope', '$state', '$stateParams', 'waitForAuth', 'loginService', function($scope, $rootScope, $state, $stateParams, waitForAuth, loginService) {
-  waitForAuth.then(function() {
-    $scope.providers = ['Google']
-    $scope.$watch('auth', $scope.kick);
-  });
-
-  $scope.kick = function(d) {
-    // console.log("STATE ", $state, $scope.auth);
-      if( (!$state || !!$state.current.authRequired) && (!$scope.auth || !$scope.auth.user) ) {
-        // Boot them!
-        // console.log("  BOOT")
-        $state.go('app.welcome');
-      }
-    }
-
+.controller('AccountCtrl', ['$scope', '$rootScope', '$state', '$stateParams', 'loginService', function($scope, $rootScope, $state, $stateParams, loginService) {
   $scope.login = function(provider, callback) {
     console.log("Try logging in with provider '"+provider+"'...", callback);
     $scope.err = null;
