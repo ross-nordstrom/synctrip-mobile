@@ -2,11 +2,13 @@ angular.module('synctrip.controller.trips', ['simpleLogin','synctrip.service.tri
 .controller('TripsCtrl', ['$scope','Trips', 'currentUser', function($scope, Trips, currentUser) {
   $scope.currentUser = currentUser;
   $scope.newTrip = {};
-  $scope.trips = Trips.collection($scope.currentUser); //$scope.randomTrip();
+  $scope.trips = Trips.collection($scope.currentUser);
 
   $scope.doRefresh = function() {
-    $scope.trips = $scope.randomTrip();
-    $scope.$broadcast('scroll.refreshComplete');
+    $scope.trips = Trips.collection($scope.currentUser);
+    $scope.trips.$loaded().then(function() {
+      $scope.$broadcast('scroll.refreshComplete');
+    });
   }
 
   $scope.createTrip = function() {
