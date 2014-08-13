@@ -43,3 +43,29 @@ img.banner {
   margin-right: auto;
 
 }
+
+.responsive-card {
+  float:left;
+  width:97%;
+}
+
+@media screen and (min-width: 560px)  {
+  .responsive-card {
+    width:46%;
+  }
+}
+@media screen and (min-width: 860px)  {
+  .responsive-card {
+    width:31%;
+  }
+}
+@media screen and (min-width: 1000px) {
+  .responsive-card {
+    width:23%;
+  }
+}
+@media screen and (min-width: 1400px) {
+  .responsive-card {
+    width:19%;
+  }
+}

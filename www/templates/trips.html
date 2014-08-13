@@ -3,19 +3,57 @@
     <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
   </ion-nav-buttons>
   <ion-content class="has-header">
-   <ion-refresher
-    pulling-text="Pull to refresh..."
-    on-refresh="doRefresh()">
-  </ion-refresher>
+    <ion-refresher
+      pulling-text="Pull to refresh..."
+      on-refresh="doRefresh()">
+    </ion-refresher>
     <ion-list>
-      <ion-item class="item-input">
-        <form ng-submit="createTrip()" ng-blur="createTrip()">
-          <input type="text" placeholder="New Trip Name" ng-model="newTrip.name">
-        </form>
-      </ion-item>
-      <ion-item ng-repeat="(key,trip) in trips" href="#/app/trips/{{trip.id}}">
-        {{key}}///{{trip}}
-      </ion-item>
+      <form ng-submit="createTrip()">
+        <div class="item item-input">
+            <!-- <label class="item-input-wrapper"> -->
+              <input type="text" placeholder="New Trip Name" ng-model="newTrip.name">
+            <!-- </label> -->
+            <button class="button button-balanced">
+              <i class="icon ion-plus"></i>
+            </button>
+        </div>
+      </form>
+      <div>
+        <div class="card responsive-card" ng-repeat="(key,trip) in trips" href="#/app/trips/{{trip.id}}">
+          <div class="item item-avatar item-icon-right" href="#/app/trips/{{key}}">
+            <img src="{{trip.avatar || 'https://www.petfinder.com/wp-content/uploads/2012/11/122163343-conditioning-dog-loud-noises-632x475.jpg'}}">
+            <h2>{{trip.name}}</h2>
+            <i class="icon ion-chevron-right"></i>
+            <p>{{trip.info || 'Trip desc'}}</p>
+          </div>
+          <div class="item item-body">
+            <img class="full-image" src="{{trip.pic || 'http://whitemagicsamoyeds.com/images/slides/14_Alexia_and_Her_Litter_Mates-2.jpg'}}">
+            <p>
+              {{trip.details || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque in pharetra justo, vel feugiat urna. Fusce sodales odio ut eros semper ullamcorper vel eu diam. Quisque at dictum magna, vel mattis magna. Etiam eros enim, mattis in odio quis, blandit suscipit eros. Donec auctor dui ipsum, eget viverra nunc semper.'}}
+            </p>
+            <p>
+              <a href="#" class="subdued">{{trip.startDate || 'Jan 24, 2015'}}</a>
+              <a href="#" class="subdued">{{trip.totalDuration || '2h 33m'}}</a>
+              <a href="#" class="subdued">{{trip.totalDistance || '145 miles'}}</a>
+              <a href="#" class="subdued">{{trip.totalStops || '3 stops'}}</a>
+            </p>
+          </div>
+          <div class="item tabs tabs-secondary tabs-icon-left">
+            <a class="tab-item" href="#">
+              <i class="icon ion-chatbox"></i>
+              Comment
+            </a>
+            <a class="tab-item" href="#" ng-hide="trip.ownerId == currentUser.uid">
+              <i class="icon ion-log-out"></i>
+              Leave
+            </a>
+            <a class="tab-item" href="#" ng-show="trip.ownerId == currentUser.uid">
+              <i class="icon ion-close"></i>
+              Delete
+            </a>
+          </div>
+        </div>
+      </div>
     </ion-list>
   </ion-content>
   <ion-nav-buttons side="right">
