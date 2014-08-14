@@ -106,7 +106,7 @@ angular.module('synctrip', ['ionic', 'firebase.utils', 'synctrip.config', 'simpl
       resolve: resolveUser
     })
 
-    .state('app.trips.detail', {
+    .state('app.tripDetail', {
       url: "/trips/:id",
       authRequired: true,
       views: {
