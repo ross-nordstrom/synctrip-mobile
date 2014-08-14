@@ -1,9 +1,11 @@
-<ion-view title="Trip">
+<ion-view title="Trip Details">
   <ion-nav-buttons side="left">
     <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
   </ion-nav-buttons>
   <ion-content class="has-header">
-    <h1>Trip</h1>
+    <h1><img src="{{trip.avatar}}"> {{trip.name}} <small>{{trip.info}}</small></h1>
+    <img src="{{trip.pic}}">
+    <p>{{trip.details}}</p>
   </ion-content>
   <ion-nav-buttons side="right">
     <button menu-toggle="right" class="button button-icon icon ion-person"></button>

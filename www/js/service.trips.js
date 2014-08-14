@@ -12,8 +12,9 @@ angular.module('synctrip.service.trips', [])
         return $firebase(ref).$asArray();
       }
       , find: function(tripId) {
+        if(!tripId || tripId.length == 0) return null;
         console.log("FIND ",tripId);
-        return FireRef.trips().child(tripId);
+        return fbutil.syncObject('/trips/'+tripId);
       }
       , create: function(trip, owner, cb) {
         console.log("Trips services create: ", trip, owner);
