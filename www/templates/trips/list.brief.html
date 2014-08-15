@@ -1,5 +1,5 @@
 <header class="bar bar-header bar-balanced">
-  <h1 class="title">Trips</h1>
+  <a ui-sref="app.trips"><h1 class="title">Trips</h1></a>
 </header>
 <ion-content class="has-header">
   <ion-refresher
@@ -18,7 +18,7 @@
       </div>
     </form>
     <a ng-repeat="(idx,trip) in trips" class="item item-thumbnail-left item-icon-right" ui-sref="app.tripDetail({ id: trip.$id})">
-      <img src="{{trip.avatar || 'https://www.petfinder.com/wp-content/uploads/2012/11/122163343-conditioning-dog-loud-noises-632x475.jpg'}}">
+      <img src="{{trip.avatar || 'http://ionicframework.com/img/docs/blue-album.jpg' }}">
       <h2>{{trip.name}}</h2>
       <p>{{trip.info || 'Trip desc'}}</p>
       <i class="icon ion-chevron-right"></i>

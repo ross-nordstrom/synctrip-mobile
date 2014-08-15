@@ -21,7 +21,7 @@
       <div>
         <div class="card responsive-card" ng-repeat="(idx,trip) in trips">
           <a class="item item-avatar item-icon-right" ui-sref="app.tripDetail({ id: trip.$id})">
-            <img src="{{trip.avatar || 'https://www.petfinder.com/wp-content/uploads/2012/11/122163343-conditioning-dog-loud-noises-632x475.jpg'}}">
+            <img src="{{trip.avatar || 'http://ionicframework.com/img/docs/blue-album.jpg' }}">
             <h2>{{trip.name}}</h2>
             <i class="icon ion-chevron-right"></i>
             <p>{{trip.info || 'Trip desc'}}</p>
