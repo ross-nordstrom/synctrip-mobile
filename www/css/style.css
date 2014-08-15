@@ -67,6 +67,9 @@ img.banner {
 .banner-group .item h1,.banner-group .item h2, .banner-group .item h3, .banner-group .item  h4, .banner-group .item p {
    color: whitesmoke;
 }
+.banner-group .item p {
+   white-space: normal;
+}
 
 .responsive-card {
   float:left;
