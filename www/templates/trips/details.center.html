@@ -3,8 +3,13 @@
     <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
   </ion-nav-buttons>
   <ion-content class="has-header">
-    <h1><img src="{{trip.avatar}}"> {{trip.name}} <small>{{trip.info}}</small></h1>
-    <img src="{{trip.pic}}">
+    <div class="banner-group">
+      <img src="{{trip.pic || 'http://whitemagicsamoyeds.com/images/slides/14_Alexia_and_Her_Litter_Mates-2.jpg'}}">
+      <div class="item item-thumbnail-left">
+        <img src="{{trip.avatar || 'https://www.petfinder.com/wp-content/uploads/2012/11/122163343-conditioning-dog-loud-noises-632x475.jpg'}}">
+        <h1>{{trip.name}} <small>{{trip.info}}</small></h1>
+      </div>
+    </div>
     <p>{{trip.details}}</p>
   </ion-content>
   <ion-nav-buttons side="right">
