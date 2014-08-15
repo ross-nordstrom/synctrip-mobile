@@ -1,0 +1,32 @@
+<div class="modal">
+
+  <div class="bar bar-header bar-energized">
+    <h1 class="title">Edit Details</h1>
+    <button class="button button-clear" ng-click="editModal.hide()"><i class="icon ion-close"></i></button>
+  </div>
+  <br><br>
+  <form ng-submit="trip.$save() && editModal.hide()">
+    <div class="list">
+      <div class="list">
+        <label class="item item-input item-floating-label">
+          <span class="input-label">Name</span>
+          <input type="text" placeholder="Name" ng-model="trip.name">
+        </label>
+        <label class="item item-input item-floating-label">
+          <span class="input-label">Subtext</span>
+          <input type="text" placeholder="Subtext" ng-model="trip.info">
+        </label>
+        <label class="item item-input item-floating-label">
+          <span class="input-label">Description</span>
+          <textarea placeholder="Description" ng-model="trip.details"></textarea>
+        </label>
+      </div>
+      <div class="list list-inset">
+      <button class="button button-block button-stable" type="submit">
+        Save Details
+      </button>
+      </div>
+    </div>
+  </form>
+
+</div>

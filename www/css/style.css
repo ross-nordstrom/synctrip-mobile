@@ -47,6 +47,7 @@ img.banner {
 .banner-group { 
    position: relative; 
    width: 100%; /* for IE 6 */
+   padding-bottom: 40px;
 }
 .banner-group > img {
    width: 100%;
@@ -56,9 +57,12 @@ img.banner {
    top: 100px; 
    left: 0; 
    width: auto; 
-   padding-right: 80px;
    background-color: rgba(0, 0, 0, 0.7); 
    border: none;
+}
+.banner-group .item .icon {
+   padding-left: 30px;
+   padding-right: 20px;
 }
 .banner-group .item h1,.banner-group .item h2, .banner-group .item h3, .banner-group .item  h4, .banner-group .item p {
    color: whitesmoke;

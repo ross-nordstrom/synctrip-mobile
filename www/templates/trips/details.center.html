@@ -5,14 +5,20 @@
   <ion-content class="has-header">
     <div class="banner-group">
       <img src="{{trip.pic || 'http://whitemagicsamoyeds.com/images/slides/14_Alexia_and_Her_Litter_Mates-2.jpg'}}">
-      <div class="item item-thumbnail-left">
+      <div class="item item-thumbnail-left" ng-click="showDetails = !showDetails">
         <img src="{{trip.avatar || 'http://ionicframework.com/img/docs/blue-album.jpg' }}">
-        <h1>{{trip.name}} <small>{{trip.info}}</small></h1>
+        <h1>{{trip.name}}
+         <small>{{trip.info}}
+            <i ng-hide="showDetails" class="icon ion-chevron-down"></i>
+            <i ng-show="showDetails" class="icon ion-chevron-up"></i>
+         </small>
+        </h1>
+        <p ng-show="showDetails">{{trip.details}}</p>
       </div>
     </div>
-    <p>{{trip.details}}</p>
   </ion-content>
   <ion-nav-buttons side="right">
+    <button class="button" ng-click="editModal.show()"><i class="icon ion-edit"></i></button>
     <button menu-toggle="right" class="button button-icon icon ion-person"></button>
   </ion-nav-buttons>
 </ion-view>
