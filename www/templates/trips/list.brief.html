@@ -1,0 +1,27 @@
+<header class="bar bar-header bar-balanced">
+  <h1 class="title">Trips</h1>
+</header>
+<ion-content class="has-header">
+  <ion-refresher
+    pulling-text="Pull to refresh..."
+    on-refresh="doRefresh()">
+  </ion-refresher>
+  <ion-list>
+    <form ng-submit="createTrip()">
+      <div class="item item-input">
+          <!-- <label class="item-input-wrapper"> -->
+            <input type="text" placeholder="New Trip Name" ng-model="newTrip.name">
+          <!-- </label> -->
+          <button class="button button-balanced">
+            <i class="icon ion-plus"></i>
+          </button>
+      </div>
+    </form>
+    <a ng-repeat="(idx,trip) in trips" class="item item-avatar item-icon-right" ui-sref="app.tripDetail({ id: trip.$id})">
+      <img src="{{trip.avatar || 'https://www.petfinder.com/wp-content/uploads/2012/11/122163343-conditioning-dog-loud-noises-632x475.jpg'}}">
+      <h2>{{trip.name}}</h2>
+      <i class="icon ion-chevron-right"></i>
+      <p>{{trip.info || 'Trip desc'}}</p>
+    </a>
+  </ion-list>
+</ion-content>

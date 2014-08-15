@@ -57,10 +57,10 @@ angular.module('synctrip', ['ionic', 'firebase.utils', 'synctrip.config', 'simpl
       url: "/welcome",
       views: {
         'main': {
-          templateUrl: "templates/welcome.html"
+          templateUrl: "templates/public/welcome.html"
         },
         'left': {
-          templateUrl: "templates/publicLeft.html"
+          templateUrl: "templates/public/publicLeft.html"
         },
         'right': {
           templateUrl: "templates/accountMenu.html",
@@ -74,10 +74,10 @@ angular.module('synctrip', ['ionic', 'firebase.utils', 'synctrip.config', 'simpl
       url: "/about",
       views: {
         'main': {
-          templateUrl: "templates/about.html"
+          templateUrl: "templates/public/about.html"
         },
         'left': {
-          templateUrl: "templates/publicLeft.html"
+          templateUrl: "templates/public/publicLeft.html"
         },
         'right': {
           templateUrl: "templates/accountMenu.html",
@@ -92,11 +92,11 @@ angular.module('synctrip', ['ionic', 'firebase.utils', 'synctrip.config', 'simpl
       authRequired: true,
       views: {
         'main': {
-          templateUrl: "templates/trips.html",
+          templateUrl: "templates/trips/list.cards.html",
           controller: 'TripsCtrl'
         },
         'left': {
-          templateUrl: "templates/demoSide.html"
+          templateUrl: "templates/public/publicLeft.html"
         },
         'right': {
           templateUrl: "templates/accountMenu.html",
@@ -111,11 +111,12 @@ angular.module('synctrip', ['ionic', 'firebase.utils', 'synctrip.config', 'simpl
       authRequired: true,
       views: {
         'main': {
-          templateUrl: "templates/trip.html",
+          templateUrl: "templates/trips/details.center.html",
           controller: 'TripCtrl'
         },
         'left': {
-          templateUrl: "templates/demoSide.html"
+          templateUrl: "templates/trips/list.brief.html",
+          controller: 'TripsCtrl'
         },
         'right': {
           templateUrl: "templates/accountMenu.html",
