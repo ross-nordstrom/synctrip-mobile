@@ -1,4 +1,4 @@
-angular.module('synctrip.controller.trip', ['simpleLogin','synctrip.service.trips'])
+angular.module('synctrip.controller.trip', ['simpleLogin','google.maps','synctrip.service.trips'])
 .controller('TripCtrl', ['$scope','$stateParams','$ionicModal','Trips', 'currentUser', function($scope, $stateParams, $ionicModal, Trips, currentUser) {
   $scope.currentUser = currentUser;
   $scope.trip = Trips.find($stateParams.id);
