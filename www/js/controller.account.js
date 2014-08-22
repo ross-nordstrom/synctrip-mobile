@@ -26,7 +26,8 @@ angular.module('synctrip.controller.account', ['simpleLogin'])
         }
       } else {
         console.log("Successfully signed in: ", user);
-        $state.go('app.trips')
+        $state.go('app.trips');
+        $window.location.reload(true)
         }
         $scope.err = err||null;
         typeof(callback) === 'function' && callback(err, user);
@@ -37,5 +38,6 @@ angular.module('synctrip.controller.account', ['simpleLogin'])
     loginService.logout();
     $scope.currentUser = null;
     $state.go('app.welcome');
+    $window.location.reload(true)
   }
 }])

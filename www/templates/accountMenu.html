@@ -3,7 +3,7 @@
 </header>
 <ion-content class="has-header" ng-hide="currentUser">
   <ion-list ng-repeat="provider in providers">
-    <ion-item nav-clear href="#" eat-click ng-click="login(provider)">
+    <ion-item nav-clear href="#" eat-click ng-click="login(provider)" menu-close>
       <i class="icon ion-social-{{provider | lowercase}}"></i> Sign In with {{ provider }}
     </ion-item>
     <ion-item class="energized" href="#" eat-click ng-show="err">{{err}}</ion-item>
