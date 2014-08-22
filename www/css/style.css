@@ -49,6 +49,14 @@ img.banner {
    width: 100%; /* for IE 6 */
    padding-bottom: 40px;
 }
+.banner-group .toggle {
+  position: absolute;
+  top:5px;
+  right:10px;
+}
+.banner-group .toggle .track {
+  border:solid black 2px;
+}
 .banner-group > img {
    width: 100%;
 }

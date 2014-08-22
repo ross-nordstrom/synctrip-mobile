@@ -3,7 +3,15 @@ angular.module('synctrip.controller.trip', ['simpleLogin','synctrip.service.trip
   $scope.currentUser = currentUser;
   $scope.trip = Trips.find($stateParams.id);
   $scope.showDetails = false;
+  $scope.showMap = false;
   $scope.editModal = null;
+  $scope.map = {
+    center: {
+        latitude: 45,
+        longitude: -73
+    },
+    zoom: 4
+  };
 
   $scope.doRefresh = function() {
     $scope.trip = Trips.find($scope.currentUser);
