@@ -1,0 +1,17 @@
+<ion-view title="Trip Details">
+  <ion-nav-buttons side="left">
+    <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
+  </ion-nav-buttons>
+  <ion-tabs class="tabs-positive tabs-icon-only">
+    <ion-tab title="Home" icon-on="ion-ios7-photos" icon-off="ion-ios7-photos-outline">
+      <ion-nav-view name="first-tab"></ion-nav-view>
+    </ion-tab>
+    <ion-tab title="About" icon-on="ion-ios7-location" icon-off="ion-ios7-location-outline">
+      <ion-nav-view name="second-tab"></ion-nav-view>
+    </ion-tab>
+  </ion-tabs>
+  <ion-nav-buttons side="right">
+    <button class="button" ng-click="editModal.show()"><i class="icon ion-edit"></i></button>
+    <button menu-toggle="right" class="button button-icon icon ion-person"></button>
+  </ion-nav-buttons>
+</ion-view>

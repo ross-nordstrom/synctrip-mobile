@@ -111,7 +111,7 @@ angular.module('synctrip', ['ionic', 'firebase.utils', 'google-maps', 'synctrip.
       authRequired: true,
       views: {
         'main': {
-          templateUrl: "templates/trips/details.center.html",
+          templateUrl: "templates/trips/tabs.html",
           controller: 'TripCtrl'
         },
         'left': {
