@@ -1,6 +1,11 @@
 <ion-view title="Trip Destinations">
 <ion-content class="padding">
 <h2>Trip Destinations!</h2>
+<input type="text" data-geoautocomplete ng-model="autocomplete" options="(cities)" details=""
+                ng-blur="$parent.editDestination(-1)" />
+<ion-list>
+   <ion-item ng-repeat="destination in trip.destinations"></ion-item>
+</ion-list>
 <p>
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam ac placerat dui. Donec ligula purus, mollis at tellus eu, commodo condimentum orci. Nunc semper metus pellentesque risus suscipit maximus. Nullam vel augue euismod, pretium ante sit amet, pulvinar erat. Aenean velit mi, mattis id tempor vitae, vulputate a tortor. In hac habitasse platea dictumst. Integer sit amet hendrerit metus, ut consequat mauris.
 
