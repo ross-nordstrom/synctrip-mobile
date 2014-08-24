@@ -17,8 +17,8 @@
           </button>
       </div>
     </form>
-    <a ng-repeat="(idx,trip) in trips" class="item item-thumbnail-left item-icon-right" ui-sref="app.tripDetail({ id: trip.$id})">
-      <img src="{{trip.avatar || 'http://ionicframework.com/img/docs/blue-album.jpg' }}">
+    <a ng-repeat="(idx,trip) in trips" class="item item-thumbnail-left item-icon-right" ui-sref="app.trip.details({ id: trip.$id})">
+      <img ng-src="{{trip.avatar || 'http://ionicframework.com/img/docs/blue-album.jpg' }}">
       <h2>{{trip.name}}</h2>
       <p>{{trip.info || 'Trip desc'}}</p>
       <i class="icon ion-chevron-right"></i>

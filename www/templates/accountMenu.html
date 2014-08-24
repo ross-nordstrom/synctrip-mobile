@@ -12,7 +12,7 @@
 <ion-content class="has-header" ng-show="currentUser">
   <ion-list>
     <ion-item class="item item-avatar" href="#" eat-click>
-      <img src="{{currentUser.thirdPartyUserData.picture}}" ng-show="!!currentUser && !!currentUser.thirdPartyUserData && !!currentUser.thirdPartyUserData.picture"/>
+      <img ng-src="{{currentUser.thirdPartyUserData.picture}}" ng-show="!!currentUser && !!currentUser.thirdPartyUserData && !!currentUser.thirdPartyUserData.picture"/>
       <h2><i class="icon ion-social-{{currentUser.provider | lowercase}}"></i>&nbsp;{{currentUser.displayName}}</h2>
       <h4>{{currentUser.email}}</h4>
     </ion-item>

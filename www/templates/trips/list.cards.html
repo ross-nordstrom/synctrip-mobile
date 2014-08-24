@@ -20,16 +20,18 @@
       </form>
       <div>
         <div class="card responsive-card" ng-repeat="(idx,trip) in trips">
-          <a class="item item-avatar item-icon-right" ui-sref="app.tripDetail({ id: trip.$id})">
-            <img src="{{trip.avatar || 'http://ionicframework.com/img/docs/blue-album.jpg' }}">
+          <a class="item item-avatar item-icon-right" ui-sref="app.trip.details({ id: trip.$id})">
+            <img ng-src="{{trip.avatar || 'http://ionicframework.com/img/docs/blue-album.jpg' }}">
             <h2>{{trip.name}}</h2>
             <i class="icon ion-chevron-right"></i>
             <p>{{trip.info || 'Trip desc'}}</p>
           </a>
           <div class="item item-body">
-            <img class="full-image" src="{{trip.pic || 'http://whitemagicsamoyeds.com/images/slides/14_Alexia_and_Her_Litter_Mates-2.jpg'}}">
+            <img class="full-image" ng-src="{{trip.pic || 'http://whitemagicsamoyeds.com/images/slides/14_Alexia_and_Her_Litter_Mates-2.jpg'}}">
             <p>
-              {{trip.details || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque in pharetra justo, vel feugiat urna. Fusce sodales odio ut eros semper ullamcorper vel eu diam. Quisque at dictum magna, vel mattis magna. Etiam eros enim, mattis in odio quis, blandit suscipit eros. Donec auctor dui ipsum, eget viverra nunc semper.'}}
+              {{trip.details || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque in pharetra justo,
+              vel feugiat urna. Fusce sodales odio ut eros semper ullamcorper vel eu diam. Quisque at dictum magna, vel
+              mattis magna. Etiam eros enim, mattis in odio quis, blandit suscipit eros. Donec auctor dui ipsum, eget viverra nunc semper.'}}
             </p>
             <p>
               <a href="#" class="subdued">{{trip.startDate || 'Jan 24, 2015'}}</a>

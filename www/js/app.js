@@ -106,8 +106,9 @@ angular.module('synctrip', ['ionic', 'firebase.utils', 'google-maps', 'synctrip.
       resolve: resolveUser
     })
 
-    .state('app.tripDetail', {
+    .state('app.trip', {
       url: "/trips/:id",
+      abstract: true,
       authRequired: true,
       views: {
         'main': {
@@ -121,6 +122,42 @@ angular.module('synctrip', ['ionic', 'firebase.utils', 'google-maps', 'synctrip.
         'right': {
           templateUrl: "templates/accountMenu.html",
           controller: 'AccountCtrl'
+        }
+      },
+      resolve: resolveUser
+    })
+
+    .state('app.trip.details', {
+      url: "",
+      authRequired: true,
+      views: {
+        'first-tab': {
+           templateUrl: "templates/trips/details.html",
+           controller: 'TripsCtrl'
+        }
+      },
+      resolve: resolveUser
+    })
+
+    .state('app.trip.destinations', {
+      url: "/destinations",
+      authRequired: true,
+      views: {
+        'second-tab': {
+           templateUrl: "templates/trips/destinations.html",
+           controller: 'TripsCtrl'
+        }
+      },
+      resolve: resolveUser
+    })
+
+    .state('app.trip.map', {
+      url: "/map",
+      authRequired: true,
+      views: {
+        'third-tab': {
+           templateUrl: "templates/trips/map.html",
+           controller: 'TripsCtrl'
         }
       },
       resolve: resolveUser
