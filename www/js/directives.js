@@ -1,6 +1,6 @@
 'use strict';
 
- angular.module('synctrip.directives', ['synctrip.directive.geoautocomplete']).
+ angular.module('synctrip.directives', ['ngAutocomplete']).
  directive('eatClick', [ function () {
   return {
     restrict:"EAC",

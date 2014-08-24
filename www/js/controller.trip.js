@@ -2,8 +2,6 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
 .controller('TripCtrl', ['$scope','$stateParams','$ionicModal','Trips', 'currentUser', function($scope, $stateParams, $ionicModal, Trips, currentUser) {
   $scope.currentUser = currentUser;
   $scope.trip = Trips.find($stateParams.id);
-  $scope.showDetails = false;
-  $scope.showMap = false;
   $scope.editModal = null;
   $scope.map = {
     center: {
@@ -18,6 +16,14 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     $scope.trip.$loaded().then(function() {
       $scope.$broadcast('scroll.refreshComplete');
     });
+  }
+
+  $scope.addDestination = function(sc) {
+    console.log("add destination!", sc, $scope.newDestination, $scope.newDestinationDetails);
+    if(!$scope.newDestinationDetails || !$scope.newDestinationDetails.formatted_address || $scope.newDestinationDetails.formatted_address.length == 0) return;
+    $scope.trip.destinations.push($scope.newDestinationDetails);
+    $scope.newDestinationDetails = null;
+    $scope.newDestination = '';
   }
 
   //init the modal

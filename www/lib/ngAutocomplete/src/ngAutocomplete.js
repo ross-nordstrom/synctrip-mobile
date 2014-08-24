@@ -4,8 +4,6 @@
  * A directive for adding google places autocomplete to a text box
  * google places autocomplete info: https://developers.google.com/maps/documentation/javascript/places
  *
- * https://github.com/wpalahnuk/ngAutocomplete
- *
  * Usage:
  *
  * <input type="text"  ng-autocomplete ng-model="autocomplete" options="options" details="details/>
@@ -27,17 +25,15 @@
  *        types: '(cities)',
  *        country: 'ca'
  *    }
- **/
+**/
 
- angular.module( "synctrip.directive.geoautocomplete", [])
- .directive('geoautocomplete', ['$timeout',
-  function($timeout) {
+angular.module( "ngAutocomplete", [])
+  .directive('ngAutocomplete', function() {
     return {
       require: 'ngModel',
       scope: {
         ngModel: '=',
         options: '=?',
-        autocomplete: '=?',
         details: '=?'
       },
 
@@ -95,7 +91,7 @@
               scope.$apply(function() {
 
                 scope.details = result;
-                scope.emitGeo();
+
                 controller.$setViewValue(element.val());
               });
             }
@@ -107,42 +103,35 @@
           }
         })
 
-        //function to get retrieve the autocompletes first result using the AutocompleteService
+        //function to get retrieve the autocompletes first result using the AutocompleteService 
         var getPlace = function(result) {
           var autocompleteService = new google.maps.places.AutocompleteService();
           if (result.name.length > 0){
             autocompleteService.getPlacePredictions(
-            {
-              input: result.name,
-              offset: result.name.length
-            },
-            function listentoresult(list, status) {
-              if(list == null || list.length == 0) {
+              {
+                input: result.name,
+                offset: result.name.length
+              },
+              function listentoresult(list, status) {
+                if(list == null || list.length == 0) {
 
-                scope.$apply(function() {
-                  scope.details = null;
-                });
+                  scope.$apply(function() {
+                    scope.details = null;
+                  });
 
-              } else {
-                var placesService = new google.maps.places.PlacesService(element[0]);
-                placesService.getDetails(
-                  {'reference': list[0].reference},
-                  function detailsresult(detailsResult, placesServiceStatus) {
+                } else {
+                  var placesService = new google.maps.places.PlacesService(element[0]);
+                  placesService.getDetails(
+                    {'reference': list[0].reference},
+                    function detailsresult(detailsResult, placesServiceStatus) {
 
-                    if (placesServiceStatus == google.maps.GeocoderStatus.OK) {
-                      scope.$apply(function() {
+                      if (placesServiceStatus == google.maps.GeocoderStatus.OK) {
+                        scope.$apply(function() {
 
-                        controller.$setViewValue(detailsResult.formatted_address);
-                        element.val(detailsResult.formatted_address);
+                          controller.$setViewValue(detailsResult.formatted_address);
+                          element.val(detailsResult.formatted_address);
 
-                        scope.details = detailsResult;
-
-                        // Inform the parent controller(s)
-                        var dataToEmit = {
-                          autocomplete: scope.autocomplete,
-                          details: scope.details
-                        };
-                        $scope.$emit('geoautocomplete.updated', dataToEmit);
+                          scope.details = detailsResult;
 
                           //on focusout the value reverts, need to set it again.
                           var watchFocusOut = element.on('focusout', function(event) {
@@ -151,38 +140,18 @@
                           })
 
                         });
+                      }
                     }
-                  }
                   );
-}
-});
-}
-}
+                }
+              });
+          }
+        }
 
-controller.$render = function () {
-  var location = controller.$viewValue;
-  element.val(location);
-};
-
-scope.emitGeo = function() {
-  $timeout(function() {
-    console.log("AUTOCOMPLETE: ", scope, scope.details);
-    if(!!scope.$parent.autocomplete && !!scope.details) {
-                    // Inform the parent controller(s)
-                    var dataToEmit = {
-                      autocomplete: scope.$parent.autocomplete,
-                      details: scope.details
-                    };
-                    console.log("EMIT ==> ", dataToEmit);
-                    scope.$emit('geoautocomplete.updated', dataToEmit);
-                    scope.$parent.autocomplete = '';
-                    scope.details = {};
-                  } else {
-                    // Nothing to emit
-                    console.log("NOTHING TO EMIT")
-                  }
-                }, 100 );
-}
+        controller.$render = function () {
+          var location = controller.$viewValue;
+          element.val(location);
+        };
 
         //watch options provided to directive
         scope.watchOptions = function () {
@@ -194,4 +163,4 @@ scope.emitGeo = function() {
 
       }
     };
-  }]);
+  });

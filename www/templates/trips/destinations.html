@@ -1,21 +1,19 @@
 <ion-view title="Trip Destinations">
 <ion-content class="padding">
-<h2>Trip Destinations!</h2>
-<input type="text" data-geoautocomplete ng-model="autocomplete" options="(cities)" details=""
-                ng-blur="$parent.editDestination(-1)" />
-<ion-list>
-   <ion-item ng-repeat="destination in trip.destinations"></ion-item>
-</ion-list>
-<p>
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam ac placerat dui. Donec ligula purus, mollis at tellus eu, commodo condimentum orci. Nunc semper metus pellentesque risus suscipit maximus. Nullam vel augue euismod, pretium ante sit amet, pulvinar erat. Aenean velit mi, mattis id tempor vitae, vulputate a tortor. In hac habitasse platea dictumst. Integer sit amet hendrerit metus, ut consequat mauris.
-
-In elementum nulla mi, sed euismod purus rhoncus ullamcorper. Vivamus sit amet orci feugiat, viverra nunc vitae, sollicitudin purus. Nunc mattis orci nec feugiat vehicula. Proin quis vestibulum purus, quis porta arcu. Nulla non volutpat velit. Mauris rutrum lacus id accumsan rutrum. Mauris porta mollis metus, et ultricies lacus gravida in. Fusce commodo dui id eros convallis, at feugiat ex ultricies.
-
-Vivamus sagittis, metus at hendrerit pharetra, elit odio scelerisque ligula, ut bibendum massa est nec diam. Proin nec lorem justo. Sed elementum vitae nisl et lobortis. Nullam laoreet euismod vulputate. Pellentesque laoreet augue sed libero posuere dapibus. Donec in nisi efficitur, vestibulum nisl vulputate, blandit nulla. Aliquam iaculis non quam ac pretium. Ut nunc nibh, tristique in purus dignissim, interdum ornare sapien. Sed ac suscipit nulla.
-
-Suspendisse potenti. In justo justo, blandit non ipsum id, imperdiet dapibus lorem. Donec id libero ipsum. Aenean ut tincidunt quam. Donec molestie sagittis massa, in maximus arcu aliquet id. Phasellus ultrices tincidunt interdum. Integer congue consectetur commodo.
-
-Nam facilisis sagittis lectus, at dignissim quam egestas et. Aliquam auctor efficitur tempor. Nunc eget ante sit amet mauris iaculis volutpat non sit amet augue. Etiam justo lorem, ornare eu velit eu, fringilla vehicula nulla. Maecenas eget nibh iaculis, rutrum augue eget, semper orci. Phasellus sed tortor viverra, interdum augue non, lobortis erat. Maecenas suscipit orci ante, congue molestie tellus consectetur vel. Phasellus scelerisque enim ut arcu posuere, et scelerisque nibh sagittis.
-</p>
+   <form ng-submit="addDestination($scope)">
+      <div class="item item-input">
+         <!-- <label class="item-input-wrapper"> -->
+         <input type="text" ng-autocomplete ng-model="newDestination" options="(cities)" details="newDestinationDetails"/>
+         <!-- </label> -->
+         <button class="button button-balanced">
+         <i class="icon ion-plus"></i>
+         </button>
+      </div>
+   </form>
+   <p>Place: {{newDestination}}</p>
+   <p style="max-height:100px; overflow-y:scroll;">Details: {{newDestinationDetails}}</p>
+   <ion-list>
+      <ion-item ng-repeat="destination in trip.destinations"></ion-item>
+   </ion-list>
 </ion-content>
 </ion-view>
