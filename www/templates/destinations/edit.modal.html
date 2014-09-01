@@ -8,6 +8,10 @@
   <form name="editDestinationForm" ng-submit="trip.$save() && editDestinationModal.hide()">
     <div class="list">
       <div class="list">
+        <label class="item item-input item-floating-label">
+          <span class="input-label">About</span>
+          <input type="text" placeholder="About" ng-model="destination.info">
+        </label>
         <label class="item item-input" ng-hide="destinationIdx === 0">
           <span class="input-label">Arrive Date</span>
           <input type="date" placeholder="Arrive Date" name="arriveDate" ng-model="destination.arriveDate" min="{{fakeMin()}}">

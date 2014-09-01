@@ -100,6 +100,15 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     if(!!$scope.editDestinationModal) $scope.editDestinationModal.remove();
   });
 
+  $scope.departDateTime = function(destination) {
+    var dt = destination.departDate + ' ' + (destination.departTime || '11:59 pm');
+    return new Date(dt);
+  }
+  $scope.arriveDateTime = function(destination) {
+    var dt = destination.arriveDate + ' ' + (destination.arriveTime || '01:00 am');
+    return new Date(dt);
+  }
+
 $scope.fakeMin = function() { return '2014-09-05'; }
 
  /****************************************************************************

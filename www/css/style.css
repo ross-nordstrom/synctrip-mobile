@@ -109,3 +109,54 @@ img.banner {
 .angular-google-map-container {
   height: 400px;
 }
+
+.list-no-borders > .list > .item:not(:first-child) {
+  border-top: none;
+}
+.list-no-borders > .list > .item:not(:last-child) {
+  border-bottom: none;
+}
+.list-no-borders > .list > .item {
+  padding-bottom: 4px;
+}
+
+.row-dense {
+  margin-top: -30px;
+  border: none;
+}
+.row-dense .col {
+  padding: 0px;
+  border: none;
+}
+.row-dense .item {
+  border: none;
+}
+
+.center {
+  text-align: center;
+}
+
+.calendar-stack {
+  position: relative;
+  display: inline-block;
+  width: 2em;
+  height: 2em;
+  line-height: 2em;
+  vertical-align: middle;
+}
+.calendar-stack .icon {
+  font-size: 3em;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 3em;
+}
+.calendar-stack h4 {
+  position: absolute;
+  font-size: 2em;
+  top: 0px;
+  left: 0px;
+  width: 3em;
+  margin-left: 4px;
+  margin-top: .3em;
+}
