@@ -26,8 +26,9 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
   ];
 
   $scope.doRefresh = function() {
-    $scope.trip = Trips.find($scope.currentUser);
+    $scope.trip = Trips.find($stateParams.id);
     $scope.trip.$loaded().then(function() {
+      $scope.calculateRoute();
       $scope.$broadcast('scroll.refreshComplete');
     });
   }

@@ -1,5 +1,9 @@
 <ion-view title="Trip Destinations">
 <ion-content class="padding">
+    <ion-refresher
+      pulling-text="Pull to refresh..."
+      on-refresh="doRefresh()">
+    </ion-refresher>
    <div class="row padding">
      <div class="col" ng-repeat="(idx,item) in overviewItems">
       <a class="item item-icon-left">
@@ -22,7 +26,7 @@
             </div>
             <div class="col" ng-show="destination.duration">
                <h2><i class="icon ion-clock"></i></h2>
-               <p>{{destination.duration | durationString}}</p>
+               <p>{{destination.duration | durationString:true}}</p>
             </div>
          </div>
       </ion-item>
