@@ -1,6 +1,6 @@
 angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synctrip.service.trips'])
 .controller('TripCtrl', ['$scope','$rootScope','$stateParams','$ionicModal','Trips', 'currentUser', function($scope, $rootScope, $stateParams, $ionicModal, Trips, currentUser) {
-  var destinationDetailsWhitelist = ['address_components', 'formatted_address', 'geometry', 'icon', 'name', 'place_id', 'url', 'vicinity'];
+  var destinationDetailsWhitelist = ['address_components', 'formatted_address', 'geometry', 'icon', 'place_id', 'url', 'vicinity'];
 
   $scope.currentUser = currentUser;
   $scope.trip = Trips.find($stateParams.id);
@@ -19,10 +19,6 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
   $scope.newDestination;
   $scope.newDestinationDetails;
 
-  $scope.$watch('newDestination', function(foo) {
-    console.log('new dest???? ', foo, $scope.newDestination);
-  })
-
   $scope.doRefresh = function() {
     $scope.trip = Trips.find($scope.currentUser);
     $scope.trip.$loaded().then(function() {
@@ -30,13 +26,18 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     });
   }
 
+ /****************************************************************************
+  * Destination management
+  */
   $scope.addDestination = function(place, details) {
-    console.log("add destination!", place, details, this.newDestination, this.newDestinationDetails);
-    if(!this.newDestinationDetails || !this.newDestinationDetails.formatted_address || this.newDestinationDetails.formatted_address.length == 0) return;
-    if(this.newDestinationDetails.formatted_address == this.trip.destinations[this.trip.destinations.length - 1]) return;
     var that = this;
 
+    console.log("add destination!", place, details, this.newDestination, this.newDestinationDetails);
+    if(!this.newDestinationDetails || !this.newDestinationDetails.formatted_address || this.newDestinationDetails.formatted_address.length == 0) return;
+
     this.trip.destinations = this.trip.destinations || [];
+    if(this.newDestinationDetails.formatted_address == this.trip.destinations[this.trip.destinations.length - 1]) return;
+
     var details = {};
     var newDestinationDetails = this.newDestinationDetails;
     angular.forEach(destinationDetailsWhitelist, function(key) {
@@ -44,7 +45,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
         details[key] = newDestinationDetails[key];
       }
     });
-    this.trip.destinations.push(details);
+    this.trip.destinations.push({ name: newDestinationDetails.name, details: details});
     this.trip.$save().then(function(){
       that.newDestinationDetails = null;
       that.newDestination = '';
@@ -64,6 +65,22 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     if(!!$scope.editModal) $scope.editModal.remove();
   });
 
-}])
+ /****************************************************************************
+  * Navigation management
+  */
+  $scope.getRoute = function(callback) {
+    if($scope.trip.destinations && $scope.trip.destinations.length > 1) {
+      var count = $scope.trip.destinations.length;
+      var origin = $scope.trip.destinations[0].details.formatted_address;
+      var destination = $scope.trip.destinations[count-1].details.formatted_address;
+      var waypoints = [];
+      for(var i = 1; i < count-1; i++) {
+        waypoints.push($scope.trip.destinations[i].details.formatted_address);
+      }
+      Gmap.getRoute(origin, destination, waypoints, callback);
+    }
+  }
+
+}]); // controller
 
 

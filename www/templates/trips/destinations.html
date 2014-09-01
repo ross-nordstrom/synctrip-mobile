@@ -1,7 +1,10 @@
 <ion-view title="Trip Destinations">
 <ion-content class="padding">
    <ion-list>
-      <ion-item ng-repeat="destination in trip.destinations">{{destination.formatted_address}}</ion-item>
+      <ion-item ng-repeat="destination in trip.destinations">
+         <h2>{{destination.name}}</h2>
+         <p>{{destination.details.formatted_address}}</p>
+      </ion-item>
    </ion-list>
    <form ng-submit="addDestination($scope.newDestination, $scope.newDestinationDetails)">
       <div class="item item-input">
