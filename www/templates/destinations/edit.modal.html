@@ -1,0 +1,38 @@
+<div class="modal">
+
+  <div class="bar bar-header bar-energized">
+    <h1 class="title">{{ destination.name }}</h1>
+    <button class="button button-clear" ng-click="editDestinationModal.hide()"><i class="icon ion-close"></i></button>
+  </div>
+  <br><br>
+  <form name="editDestinationForm" ng-submit="trip.$save() && editDestinationModal.hide()">
+    <div class="list">
+      <div class="list">
+        <label class="item item-input item-floating-label" ng-hide="destinationIdx === 0">
+          <span class="input-label">Arrive</span>
+          <input type="date" placeholder="Arrive" name="arriveDate" ng-model="destination.arriveDate" min="{{fakeMin()}}">
+          <input type="time" placeholder="Arrive" name="arriveTime" ng-model="destination.arriveTime">
+        </label>
+        <label class="item item-input item-floating-label" ng-hide="destinationIdx === (trip.destinations.length - 1)">
+          <span class="input-label">Depart</span>
+          <input type="date" placeholder="Depart" ng-model="destination.departDate" min="{{fakeMin()}}">
+          <input type="time" placeholder="Depart" ng-model="destination.departTime">
+        </label>
+        <label class="item item-input item-floating-label">
+          <span class="input-label">Subtext</span>
+          <input type="text" placeholder="Subtext" ng-model="trip.info">
+        </label>
+        <label class="item item-input item-floating-label">
+          <span class="input-label">Description</span>
+          <textarea placeholder="Description" ng-model="trip.details"></textarea>
+        </label>
+      </div>
+      <div class="list list-inset">
+      <button class="button button-block button-stable" type="submit">
+        Save Details
+      </button>
+      </div>
+    </div>
+  </form>
+
+</div>

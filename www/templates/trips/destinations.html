@@ -1,9 +1,9 @@
 <ion-view title="Trip Destinations">
 <ion-content class="padding">
-    <ion-refresher
-      pulling-text="Pull to refresh..."
-      on-refresh="doRefresh()">
-    </ion-refresher>
+   <ion-refresher
+     pulling-text="Pull to refresh..."
+     on-refresh="doRefresh()">
+   </ion-refresher>
    <div class="row padding">
      <div class="col" ng-repeat="(idx,item) in overviewItems">
       <a class="item item-icon-left">
@@ -14,7 +14,7 @@
       </div>
    </div>
    <ion-list>
-      <ion-item ng-repeat="destination in trip.destinations">
+      <ion-item ng-repeat="(idx,destination) in trip.destinations" ng-click="editDestination(idx)">
          <div class="row">
             <div class="col col-67">
                <h2>{{destination.name}}</h2>

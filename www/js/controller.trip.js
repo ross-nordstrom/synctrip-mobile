@@ -5,7 +5,8 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
 
   $scope.currentUser = currentUser;
   $scope.trip = Trips.find($stateParams.id);
-  $scope.editModal = null;
+  $scope.editTripModal = null;
+  $scope.editDestinationModal = null;
   $scope.map = {
     center: {
         latitude: 45,
@@ -34,7 +35,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
   }
 
  /****************************************************************************
-  * Destination management
+  * Trip management
   */
   $scope.addDestination = function(place, details) {
     var that = this;
@@ -63,15 +64,43 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
   //init the modal
   $ionicModal.fromTemplateUrl('templates/trips/edit.modal.html', {
     scope: $scope,
-    animation: 'slide-in-up'
+    animation: 'slide-in-up',
+    focusFirstInput: true
   }).then(function (modal) {
-    $scope.editModal = modal;
+    $scope.editTripModal = modal;
   });
 
   //Cleanup the modal when we're done with it!
   $scope.$on('$destroy', function () {
-    if(!!$scope.editModal) $scope.editModal.remove();
+    if(!!$scope.editTripModal) $scope.editTripModal.remove();
   });
+
+ /****************************************************************************
+  * Destination management
+  */
+  $scope.editDestination = function(destinationIdx) {
+    $scope.destinationIdx = destinationIdx;
+    $scope.destination = $scope.trip.destinations[destinationIdx];
+    $scope.editDestinationModal.show();
+  }
+  $scope.updateDestination = function() {
+    console.log("Save changes to destination ", $scope.destination);
+    $scope.destination = null;
+  }
+  //init the modal
+  $ionicModal.fromTemplateUrl('templates/destinations/edit.modal.html', {
+    scope: $scope,
+    animation: 'slide-in-up'
+  }).then(function (modal) {
+    $scope.editDestinationModal = modal;
+  });
+
+  //Cleanup the modal when we're done with it!
+  $scope.$on('$destroy', function () {
+    if(!!$scope.editDestinationModal) $scope.editDestinationModal.remove();
+  });
+
+$scope.fakeMin = function() { return '2014-09-05'; }
 
  /****************************************************************************
   * Navigation management

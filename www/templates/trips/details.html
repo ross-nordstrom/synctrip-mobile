@@ -1,17 +1,17 @@
 <ion-view title="Trip Details">
   <ion-content>
+    <ion-refresher
+      pulling-text="Pull to refresh..."
+      on-refresh="doRefresh()">
+    </ion-refresher>
     <div>
       <div class="item item-thumbnail-left" ng-click="showDetails = !showDetails">
         <img ng-src="{{trip.avatar || 'http://ionicframework.com/img/docs/blue-album.jpg' }}">
-        <h1>{{trip.name}}
-         <small>{{trip.info}}
-            <i ng-hide="showDetails" class="icon ion-chevron-down"></i>
-            <i ng-show="showDetails" class="icon ion-chevron-up"></i>
-         </small>
-        </h1>
-        <p ng-show="showDetails">{{trip.details}}</p>
+        <h1>{{trip.name}}</h1>
       </div>
       <img ng-src="{{trip.pic || 'http://whitemagicsamoyeds.com/images/slides/14_Alexia_and_Her_Litter_Mates-2.jpg'}}" style="width:100%;">
     </div>
+    <h3>{{trip.info}}</h3>
+    <p>{{trip.details}}</p>
   </ion-content>
 </ion-view>

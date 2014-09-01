@@ -41,7 +41,7 @@ angular.module('synctrip.filters', [])
            if(days > 0) { str += days+"d, "; }
            if(days > 0 || hours > 0) { str += hours+":"; }
            if(min < 10) { str += "0"; }
-           if(days > 0 || hours > 0) { str += min; }
+           if(days > 0 || hours > 0) { str += min+" hr"; }
            else { str += min+" min"; }
         } else {
            if(days == 1) { str += days+" day "; }
