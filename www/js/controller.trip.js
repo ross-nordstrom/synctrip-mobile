@@ -21,8 +21,8 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
   $scope.newDestinationDetails;
 
   $scope.overviewItems = [
-    { title: 'Distance', icon: 'ion-model-s', key: 'total_distance' },
-    { title: 'Duration', icon: 'ion-clock', key: 'total_duration' }
+    { title: 'Distance', icon: 'ion-model-s', key: 'total_distance', type: 'distance' },
+    { title: 'Duration', icon: 'ion-clock', key: 'total_duration', type: 'duration' }
   ];
 
   $scope.doRefresh = function() {
@@ -55,6 +55,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     this.trip.$save().then(function(){
       that.newDestinationDetails = null;
       that.newDestination = '';
+      that.calculateRoute();
     })
   }
 
@@ -80,7 +81,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
       var destinations = $scope.trip.destinations;
       var origin = destinations[0].details.formatted_address;
       var destination = destinations[count-1].details.formatted_address;
-      var waypoints = destinations.slice(1, count - 2).map(function(destination) {
+      var waypoints = destinations.slice(1, count - 1).map(function(destination) {
         return destination.details.formatted_address;
       });
       Gmap.getRoute(origin, destination, waypoints, callback);
@@ -99,18 +100,15 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
         $scope.trip.total_duration = 0;
         $scope.trip.total_distance = 0;
         for(var i=1; i < $scope.trip.destinations.length; i++) {
-          $scope.trip.destinations[i].duration = response.routes[0].legs[i-1].duration.text;
-          $scope.trip.destinations[i].distance = response.routes[0].legs[i-1].distance.text;
+          $scope.trip.destinations[i].duration = response.routes[0].legs[i-1].duration.value;
+          $scope.trip.destinations[i].distance = response.routes[0].legs[i-1].distance.value;
 
           $scope.trip.total_duration += response.routes[0].legs[i-1].duration.value;
           $scope.trip.total_distance += response.routes[0].legs[i-1].distance.value;
         }
 
-        // Convert the total duration/distances to be human readable
-        $scope.trip.total_duration = Gmap.durationString($scope.trip.total_duration);
-        $scope.trip.total_distance = Gmap.distanceString($scope.trip.total_distance);
 
-        // $scope.trip.$save();
+        $scope.trip.$save();
       }
     });
   } // calculateRoute()

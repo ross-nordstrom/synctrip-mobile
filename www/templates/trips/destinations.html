@@ -5,18 +5,30 @@
       <a class="item item-icon-left">
          <i class="icon {{item.icon}}"></i>
          <h2>{{item.title}}</h2>
-         <p>{{trip[item.key] || 'N/A'}}</p>
+         <p>{{(trip[item.key] || '') | prettyUnits:item.type}}</p>
       </a>
       </div>
    </div>
    <ion-list>
       <ion-item ng-repeat="destination in trip.destinations">
-         <h2>{{destination.name}}</h2>
-         <p>{{destination.details.formatted_address}}</p>
+         <div class="row">
+            <div class="col col-67">
+               <h2>{{destination.name}}</h2>
+               <p>{{destination.details.formatted_address}}</p>
+            </div>
+            <div class="col" ng-show="destination.distance">
+               <h2><i class="icon ion-model-s"></i></h2>
+               <p>{{destination.distance | distanceString}}</p>
+            </div>
+            <div class="col" ng-show="destination.duration">
+               <h2><i class="icon ion-clock"></i></h2>
+               <p>{{destination.duration | durationString}}</p>
+            </div>
+         </div>
       </ion-item>
    </ion-list>
    <form ng-submit="addDestination($scope.newDestination, $scope.newDestinationDetails)">
-      <div class="item item-input">
+      <div class="item item-input padding">
          <!-- <label class="item-input-wrapper"> -->
          <input type="text" ng-autocomplete ng-model="newDestination" options="autocompleteOptions" details="newDestinationDetails" placeholder="Add a location"/>
          <!-- </label> -->
