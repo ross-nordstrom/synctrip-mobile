@@ -18,6 +18,16 @@
             </button>
         </div>
       </form>
+      <div class="item item-toggle">
+        <span ng-show="expandAll">Expand All</span>
+        <span ng-hide="expandAll">Collapse All</span>
+        <label class="toggle toggle-energized">
+          <input type="checkbox" ng-model="expandAll" ng-change="updateExpansion()">
+          <div class="track">
+            <div class="handle"></div>
+          </div>
+        </label>
+      </div>
       <div>
         <div class="card responsive-card" ng-repeat="(idx,trip) in trips">
           <a class="item item-avatar item-icon-right" ui-sref="app.trip.details({ id: trip.$id})">
@@ -28,17 +38,19 @@
           </a>
           <div class="item item-body">
             <img class="full-image" ng-src="{{trip.pic || 'http://whitemagicsamoyeds.com/images/slides/14_Alexia_and_Her_Litter_Mates-2.jpg'}}">
-            <p>
-              {{trip.details || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque in pharetra justo,
-              vel feugiat urna. Fusce sodales odio ut eros semper ullamcorper vel eu diam. Quisque at dictum magna, vel
-              mattis magna. Etiam eros enim, mattis in odio quis, blandit suscipit eros. Donec auctor dui ipsum, eget viverra nunc semper.'}}
-            </p>
-            <p>
-              <a href="#" class="subdued">{{trip.startDate || 'Jan 24, 2015'}}</a>
-              <a href="#" class="subdued">{{trip.totalDuration || '2h 33m'}}</a>
-              <a href="#" class="subdued">{{trip.totalDistance || '145 miles'}}</a>
-              <a href="#" class="subdued">{{trip.totalStops || '3 stops'}}</a>
-            </p>
+            <div ng-show="expandAll">
+              <p>
+                {{trip.details || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque in pharetra justo,
+                vel feugiat urna. Fusce sodales odio ut eros semper ullamcorper vel eu diam. Quisque at dictum magna, vel
+                mattis magna. Etiam eros enim, mattis in odio quis, blandit suscipit eros. Donec auctor dui ipsum, eget viverra nunc semper.'}}
+              </p>
+              <p>
+                <a href="#" class="subdued">{{trip.startDate || 'Jan 24, 2015'}}</a>
+                <a href="#" class="subdued">{{trip.totalDuration || '2h 33m'}}</a>
+                <a href="#" class="subdued">{{trip.totalDistance || '145 miles'}}</a>
+                <a href="#" class="subdued">{{trip.totalStops || '3 stops'}}</a>
+              </p>
+            </div>
           </div>
           <div class="item tabs tabs-secondary tabs-icon-left">
             <a class="tab-item" href="#">
@@ -49,10 +61,14 @@
               <i class="icon ion-log-out"></i>
               Leave
             </a>
-            <a class="tab-item" href="#" ng-show="trip.ownerId == currentUser.uid">
+            <span class="tab-item" ng-click="deleteTrip(trip.$id)" ng-show="trip.ownerId == currentUser.uid">
               <i class="icon ion-close"></i>
               Delete
-            </a>
+            </span>
+            <!-- <span class="tab-item" ng-click="trip.expanded = !trip.expanded">
+              <i class="icon ion-chevron-up" ng-show="trip.expanded"></i>
+              <i class="icon ion-chevron-down" ng-hide="trip.expanded"></i>
+            </span> -->
           </div>
         </div>
       </div>

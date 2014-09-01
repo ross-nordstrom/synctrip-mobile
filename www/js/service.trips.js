@@ -29,34 +29,17 @@ angular.module('synctrip.service.trips', [])
         }/*, error handler */);
         return
       }
-      , removeTrip: function(tripId) {
-        console.log("REMOVE ", tripId)
-
-        var trip = FireRef.trips().child(tripId);
-        trip.once('value', function(dataSnapshot) {
-          var trip = dataSnapshot.val();
-          console.log("   TRIP => ", trip, trip.admins, trip.collaborators);
-          for(var admin in trip.admins) {
-            console.log("      Admin ", admin);
-            var indexedTrips = new FirebaseIndex(FireRef.users().child('/'+admin+'/trips'), FireRef.trips());
-            indexedTrips.drop(tripId);
-          }
-          for(var collaborator in trip.collaborators) {
-            console.log("      Admin ", collaborator);
-            var indexedTrips = new FirebaseIndex(FireRef.users().child('/'+collaborator+'/trips'), FireRef.trips());
-            indexedTrips.drop(tripId);
-          }
-        })
-
-        var trip = this.find(tripId);
-        trip.once('value',function(dataSnapshot) {
-          // Remove the index to this from the owner
-          var ownerId = dataSnapshot.val().ownerId;
-          var indexedTrips = new FirebaseIndex(FireRef.users().child('/'+ownerId+'/trips'), FireRef.trips());
-          indexedTrips.drop(tripId);
-        })
-        trip.remove();
-        return;
+      , leave: function(tripId, user) {
+        if(!tripId || tripId.length === 0 || typeof user !== 'object' || !user.uid || user.uid.length === 0) return null;
+        var that = this;
+        console.log("LEAVE ",tripId, userId);
+        return fbutil.ref('/users/'+user.uid+'/trips/'+tripId).remove();
+      }
+      , remove: function(tripId, user) {
+        if(!tripId || tripId.length == 0) return null;
+        var that = this;
+        console.log("REMOVE ",tripId);
+        return fbutil.ref('/trips/'+tripId).remove(function() { that.leave(tripId, user) });
       }
       , collaborators: function(tripId) {
         var indexedCollaborators = new FirebaseIndex(FireRef.trips().child('/'+tripId+'/collaborators'), FireRef.users());
