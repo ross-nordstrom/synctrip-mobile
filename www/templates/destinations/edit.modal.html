@@ -8,23 +8,25 @@
   <form name="editDestinationForm" ng-submit="trip.$save() && editDestinationModal.hide()">
     <div class="list">
       <div class="list">
-        <label class="item item-input item-floating-label" ng-hide="destinationIdx === 0">
-          <span class="input-label">Arrive</span>
-          <input type="date" placeholder="Arrive" name="arriveDate" ng-model="destination.arriveDate" min="{{fakeMin()}}">
-          <input type="time" placeholder="Arrive" name="arriveTime" ng-model="destination.arriveTime">
+        <label class="item item-input" ng-hide="destinationIdx === 0">
+          <span class="input-label">Arrive Date</span>
+          <input type="date" placeholder="Arrive Date" name="arriveDate" ng-model="destination.arriveDate" min="{{fakeMin()}}">
         </label>
-        <label class="item item-input item-floating-label" ng-hide="destinationIdx === (trip.destinations.length - 1)">
-          <span class="input-label">Depart</span>
+        <label class="item item-input" ng-hide="destinationIdx === 0 || !destination.arriveDate">
+          <span class="input-label">Arrive Time</span>
+          <input type="time" placeholder="Arrive Time" name="arriveTime" ng-model="destination.arriveTime">
+        </label>
+        <label class="item item-input" ng-hide="destinationIdx === (trip.destinations.length - 1)">
+          <span class="input-label">Depart Date</span>
           <input type="date" placeholder="Depart" ng-model="destination.departDate" min="{{fakeMin()}}">
+        </label>
+        <label class="item item-input" ng-hide="destinationIdx === (trip.destinations.length - 1) || !destination.departDate">
+          <span class="input-label">Depart Time</span>
           <input type="time" placeholder="Depart" ng-model="destination.departTime">
         </label>
         <label class="item item-input item-floating-label">
-          <span class="input-label">Subtext</span>
-          <input type="text" placeholder="Subtext" ng-model="trip.info">
-        </label>
-        <label class="item item-input item-floating-label">
-          <span class="input-label">Description</span>
-          <textarea placeholder="Description" ng-model="trip.details"></textarea>
+          <span class="input-label">Notes</span>
+          <textarea placeholder="Notes" ng-model="destination.notes"></textarea>
         </label>
       </div>
       <div class="list list-inset">
