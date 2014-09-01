@@ -1,16 +1,14 @@
 /*!
- * angularfire 0.8.0 2014-07-29
- * https://github.com/firebase/angularFire
- * Copyright (c) 2014 Firebase, Inc.
- * MIT LICENSE: http://firebase.mit-license.org/
+ * AngularFire is the officially supported AngularJS binding for Firebase. Firebase
+ * is a full backend so you don't need servers to build your Angular app. AngularFire
+ * provides you with the $firebase service which allows you to easily keep your $scope
+ * variables in sync with your Firebase backend.
+ *
+ * AngularFire 0.0.0
+ * https://github.com/firebase/angularfire/
+ * Date: 08/28/2014
+ * License: MIT
  */
-
-// AngularFire is an officially supported AngularJS binding for Firebase.
-// The bindings let you associate a Firebase URL with a model (or set of
-// models), and they will be transparently kept in sync across all clients
-// currently using your app. The 2-way data binding offered by AngularJS works
-// as normal, except that the changes are also sent to all other clients
-// instead of just a server.
 (function(exports) {
   "use strict";
 
@@ -115,7 +113,7 @@
          */
         $add: function(data) {
           this._assertNotDestroyed('$add');
-          return this.$inst().$push(data);
+          return this.$inst().$push($firebaseUtils.toJSON(data));
         },
 
         /**
@@ -134,10 +132,15 @@
          */
         $save: function(indexOrItem) {
           this._assertNotDestroyed('$save');
-          var item = this._resolveItem(indexOrItem);
-          var key = this.$keyAt(item);
+          var self = this;
+          var item = self._resolveItem(indexOrItem);
+          var key = self.$keyAt(item);
           if( key !== null ) {
-            return this.$inst().$set(key, $firebaseUtils.toJSON(item));
+            return self.$inst().$set(key, $firebaseUtils.toJSON(item))
+              .then(function(ref) {
+                self._notify('child_changed', key);
+                return ref;
+              });
           }
           else {
             return $firebaseUtils.reject('Invalid record; could determine its key: '+indexOrItem);
@@ -292,6 +295,7 @@
             }
             rec.$id = snap.name();
             rec.$priority = snap.getPriority();
+            $firebaseUtils.applyDefaults(rec, this.$$defaults);
 
             // add it to array and send notifications
             this._process('child_added', rec, prevChild);
@@ -322,6 +326,7 @@
           if( angular.isObject(rec) ) {
             // apply changes to the record
             var changed = $firebaseUtils.updateRec(rec, snap);
+            $firebaseUtils.applyDefaults(rec, this.$$defaults);
             if( changed ) {
               this._process('child_changed', rec);
             }
@@ -565,8 +570,8 @@
    * <code>$firebase( firebaseRef, {objectFactory: NewFactory}).$asObject();</code>
    */
   angular.module('firebase').factory('$FirebaseObject', [
-    '$parse', '$firebaseUtils', '$log',
-    function($parse, $firebaseUtils, $log) {
+    '$parse', '$firebaseUtils', '$log', '$interval',
+    function($parse, $firebaseUtils, $log, $interval) {
       /**
        * This constructor should probably never be called manually. It is used internally by
        * <code>$firebase.$asObject()</code>.
@@ -579,34 +584,27 @@
        * @constructor
        */
       function FirebaseObject($firebase, destroyFn, readyPromise) {
-        var self = this;
-
         // These are private config props and functions used internally
-        // they are collected here to reduce clutter on the prototype
-        // and instance signatures.
-        self.$$conf = {
+        // they are collected here to reduce clutter in console.log and forEach
+        this.$$conf = {
           promise: readyPromise,
           inst: $firebase,
-          bound: null,
+          binding: new ThreeWayBinding(this),
           destroyFn: destroyFn,
-          listeners: [],
-          /**
-           * Updates any bound scope variables and notifies listeners registered
-           * with $watch any time there is a change to data
-           */
-          notify: function() {
-            if( self.$$conf.bound ) {
-              self.$$conf.bound.update();
-            }
-            // be sure to do this after setting up data and init state
-            angular.forEach(self.$$conf.listeners, function (parts) {
-              parts[0].call(parts[1], {event: 'updated', key: self.$id});
-            });
-          }
+          listeners: []
         };
 
-        self.$id = $firebase.$ref().name();
-        self.$priority = null;
+        // this bit of magic makes $$conf non-enumerable and non-configurable
+        // and non-writable (its properties are still writable but the ref cannot be replaced)
+        // we declare it above so the IDE can relax
+        Object.defineProperty(this, '$$conf', {
+          value: this.$$conf
+        });
+
+        this.$id = $firebase.$ref().ref().name();
+        this.$priority = null;
+
+        $firebaseUtils.applyDefaults(this, this.$$defaults);
       }
 
       FirebaseObject.prototype = {
@@ -615,7 +613,12 @@
          * @returns a promise which will resolve after the save is completed.
          */
         $save: function () {
-          return this.$inst().$set($firebaseUtils.toJSON(this));
+          var self = this;
+          return self.$inst().$set($firebaseUtils.toJSON(self))
+            .then(function(ref) {
+              self.$$notify();
+              return ref;
+            });
         },
 
         /**
@@ -666,43 +669,7 @@
         $bindTo: function (scope, varName) {
           var self = this;
           return self.$loaded().then(function () {
-            //todo split this into a subclass and shorten this method
-            //todo add comments and explanations
-            if (self.$$conf.bound) {
-              $log.error('Can only bind to one scope variable at a time');
-              return $firebaseUtils.reject('Can only bind to one scope variable at a time');
-            }
-
-            var unbind = function () {
-              if (self.$$conf.bound) {
-                self.$$conf.bound = null;
-                off();
-              }
-            };
-
-            // expose a few useful methods to other methods
-            var parsed = $parse(varName);
-            var $bound = self.$$conf.bound = {
-              update: function() {
-                var curr = $firebaseUtils.parseScopeData(self);
-                parsed.assign(scope, curr);
-              },
-              get: function () {
-                return parsed(scope);
-              },
-              unbind: unbind
-            };
-
-            $bound.update();
-            scope.$on('$destroy', $bound.unbind);
-
-            // monitor scope for any changes
-            var off = scope.$watch(varName, function () {
-              var newData = $firebaseUtils.toJSON($bound.get());
-              self.$inst().$set(newData);
-            }, true);
-
-            return unbind;
+            return self.$$conf.binding.bindTo(scope, varName);
           });
         },
 
@@ -739,9 +706,7 @@
           var self = this;
           if (!self.$isDestroyed) {
             self.$isDestroyed = true;
-            if (self.$$conf.bound) {
-              self.$$conf.bound.unbind();
-            }
+            self.$$conf.binding.destroy();
             $firebaseUtils.each(self, function (v, k) {
               delete self[k];
             });
@@ -758,11 +723,11 @@
         $$updated: function (snap) {
           // applies new data to this object
           var changed = $firebaseUtils.updateRec(this, snap);
-          this.$id = snap.name();
+          $firebaseUtils.applyDefaults(this, this.$$defaults);
           if( changed ) {
             // notifies $watch listeners and
             // updates $scope if bound to a variable
-            this.$$conf.notify();
+            this.$$notify();
           }
         },
 
@@ -776,6 +741,38 @@
           $log.error(err);
           // frees memory and cancels any remaining listeners
           this.$destroy(err);
+        },
+
+        /**
+         * Called internally by $bindTo when data is changed in $scope.
+         * Should apply updates to this record but should not call
+         * notify().
+         */
+        $$scopeUpdated: function(newData) {
+          // we use a one-directional loop to avoid feedback with 3-way bindings
+          // since set() is applied locally anyway, this is still performant
+          return this.$inst().$set($firebaseUtils.toJSON(newData));
+        },
+
+        /**
+         * Updates any bound scope variables and notifies listeners registered
+         * with $watch any time there is a change to data
+         */
+        $$notify: function() {
+          var self = this, list = this.$$conf.listeners.slice();
+          // be sure to do this after setting up data and init state
+          angular.forEach(list, function (parts) {
+            parts[0].call(parts[1], {event: 'value', key: self.$id});
+          });
+        },
+
+        /**
+         * Overrides how Angular.forEach iterates records on this object so that only
+         * fields stored in Firebase are part of the iteration. To include meta fields like
+         * $id and $priority in the iteration, utilize for(key in obj) instead.
+         */
+        forEach: function(iterator, context) {
+          return $firebaseUtils.each(this, iterator, context);
         }
       };
 
@@ -814,6 +811,137 @@
           ChildClass = function() { FirebaseObject.apply(this, arguments); };
         }
         return $firebaseUtils.inherit(ChildClass, FirebaseObject, methods);
+      };
+
+      /**
+       * Creates a three-way data binding on a scope variable.
+       *
+       * @param {FirebaseObject} rec
+       * @returns {*}
+       * @constructor
+       */
+      function ThreeWayBinding(rec) {
+        this.subs = [];
+        this.scope = null;
+        this.name = null;
+        this.rec = rec;
+      }
+
+      ThreeWayBinding.prototype = {
+        assertNotBound: function(varName) {
+          if( this.scope ) {
+            var msg = 'Cannot bind to ' + varName + ' because this instance is already bound to ' +
+              this.name + '; one binding per instance ' +
+              '(call unbind method or create another $firebase instance)';
+            $log.error(msg);
+            return $firebaseUtils.reject(msg);
+          }
+        },
+
+        bindTo: function(scope, varName) {
+          function _bind(self) {
+            var sending = false;
+            var parsed = $parse(varName);
+            var rec = self.rec;
+            self.scope = scope;
+            self.varName = varName;
+
+            function equals(rec) {
+              var parsed = getScope();
+              var newData = $firebaseUtils.scopeData(rec);
+              return angular.equals(parsed, newData) &&
+                parsed.$priority === rec.$priority &&
+                parsed.$value === rec.$value;
+            }
+
+            function getScope() {
+              return $firebaseUtils.scopeData(parsed(scope));
+            }
+
+            function setScope(rec) {
+              parsed.assign(scope, $firebaseUtils.scopeData(rec));
+            }
+
+            var scopeUpdated = function() {
+              var send = $firebaseUtils.debounce(function() {
+                rec.$$scopeUpdated(getScope())
+                  ['finally'](function() { sending = false; });
+              }, 50, 500);
+              if( !equals(rec) ) {
+                sending = true;
+                send();
+              }
+            };
+
+            var recUpdated = function() {
+              if( !sending && !equals(rec) ) {
+                setScope(rec);
+              }
+            };
+
+            // $watch will not check any vars prefixed with $, so we
+            // manually check $priority and $value using this method
+            function checkMetaVars() {
+              var dat = parsed(scope);
+              if( dat.$value !== rec.$value || dat.$priority !== rec.$priority ) {
+                scopeUpdated();
+              }
+            }
+
+            // Okay, so this magic hack is um... magic. It increments a
+            // variable every 50 seconds (counterKey) so that whenever $digest
+            // is run, the variable will be dirty. This allows us to determine
+            // when $digest is invoked, manually check the meta vars, and
+            // manually invoke our watcher if the $ prefixed data has changed
+            (function() {
+              // create a counter and store it in scope
+              var counterKey = '_firebaseCounterForVar'+varName;
+              scope[counterKey] = 0;
+              // update the counter every 51ms
+              // why 51? because it must be greater than scopeUpdated's debounce
+              // or protractor has a conniption
+              var to = $interval(function() {
+                scope[counterKey]++;
+              }, 51, 0, false);
+              // watch the counter for changes (which means $digest ran)
+              self.subs.push(scope.$watch(counterKey, checkMetaVars));
+              // cancel our interval and clear var from scope if unbound
+              self.subs.push(function() {
+                $interval.cancel(to);
+                delete scope[counterKey];
+              });
+            })();
+
+            setScope(rec);
+            self.subs.push(scope.$on('$destroy', self.unbind.bind(self)));
+
+            // monitor scope for any changes
+            self.subs.push(scope.$watch(varName, scopeUpdated, true));
+
+            // monitor the object for changes
+            self.subs.push(rec.$watch(recUpdated));
+
+            return self.unbind.bind(self);
+          }
+
+          return this.assertNotBound(varName) || _bind(this);
+        },
+
+        unbind: function() {
+          if( this.scope ) {
+            angular.forEach(this.subs, function(unbind) {
+              unbind();
+            });
+            this.subs = [];
+            this.scope = null;
+            this.name = null;
+          }
+        },
+
+        destroy: function() {
+          this.unbind();
+          this.rec = null;
+        }
       };
 
       return FirebaseObject;
@@ -894,14 +1022,15 @@
           },
 
           $remove: function (key) {
-            var ref = this._ref, self = this;
+            var ref = this._ref, self = this, promise;
+            var def = $firebaseUtils.defer();
             if (arguments.length > 0) {
               ref = ref.ref().child(key);
             }
-            var def = $firebaseUtils.defer();
             if( angular.isFunction(ref.remove) ) {
               // self is not a query, just do a flat remove
               ref.remove(self._handle(def, ref));
+              promise = def.promise;
             }
             else {
               var promises = [];
@@ -914,9 +1043,12 @@
                   ss.ref().remove(self._handle(d, ss.ref()));
                 }, self);
               });
-              self._handle($firebaseUtils.allPromises(promises), ref);
+              promise = $firebaseUtils.allPromises(promises)
+                .then(function() {
+                  return ref;
+                });
             }
-            return def.promise;
+            return promise;
           },
 
           $update: function (key, data) {
@@ -988,7 +1120,7 @@
               throw new Error('config.arrayFactory must be a valid function');
             }
             if (!angular.isFunction(cnf.objectFactory)) {
-              throw new Error('config.arrayFactory must be a valid function');
+              throw new Error('config.objectFactory must be a valid function');
             }
           }
         };
@@ -1093,6 +1225,7 @@
       }
     ]);
 })();
+/* istanbul ignore next */
 (function() {
   'use strict';
   var AngularFireAuth;
@@ -1498,13 +1631,23 @@ if ( typeof Object.getPrototypeOf !== "function" ) {
   'use strict';
 
   angular.module('firebase')
-    .factory('$firebaseConfig', ["$FirebaseArray", "$FirebaseObject",
-      function($FirebaseArray, $FirebaseObject) {
+    .factory('$firebaseConfig', ["$FirebaseArray", "$FirebaseObject", "$injector",
+      function($FirebaseArray, $FirebaseObject, $injector) {
         return function(configOpts) {
+          // make a copy we can modify
+          var opts = angular.extend({}, configOpts);
+          // look up factories if passed as string names
+          if( typeof opts.objectFactory === 'string' ) {
+            opts.objectFactory = $injector.get(opts.objectFactory);
+          }
+          if( typeof opts.arrayFactory === 'string' ) {
+            opts.arrayFactory = $injector.get(opts.arrayFactory);
+          }
+          // extend defaults and return
           return angular.extend({
             arrayFactory: $FirebaseArray,
             objectFactory: $FirebaseObject
-          }, configOpts);
+          }, opts);
         };
       }
     ])
@@ -1547,7 +1690,7 @@ if ( typeof Object.getPrototypeOf !== "function" ) {
             if( !maxWait ) { maxWait = wait*10 || 100; }
             var queue = [];
             var start;
-            var timer;
+            var cancelTimer;
 
             // returns `fn` wrapped in a function that queues up each call event to be
             // invoked later inside fo runNow()
@@ -1565,22 +1708,22 @@ if ( typeof Object.getPrototypeOf !== "function" ) {
             // clears the current wait timer and creates a new one
             // however, if maxWait is exceeded, calles runNow() immediately
             function resetTimer() {
-              if( timer ) {
-                $timeout.cancel(timer);
-                timer = null;
+              if( cancelTimer ) {
+                cancelTimer();
+                cancelTimer = null;
               }
               if( start && Date.now() - start > maxWait ) {
                 utils.compile(runNow);
               }
               else {
                 if( !start ) { start = Date.now(); }
-                timer = utils.compile(runNow, wait);
+                cancelTimer = utils.wait(runNow, wait);
               }
             }
 
             // Clears the queue and invokes all of the functions awaiting notification
             function runNow() {
-              timer = null;
+              cancelTimer = null;
               start = null;
               var copyList = queue.slice(0);
               queue = [];
@@ -1590,6 +1733,63 @@ if ( typeof Object.getPrototypeOf !== "function" ) {
             }
 
             return createBatchFn;
+          },
+
+          /**
+           * A rudimentary debounce method
+           * @param {function} fn the function to debounce
+           * @param {object} [ctx] the `this` context to set in fn
+           * @param {int} wait number of milliseconds to pause before sending out after each invocation
+           * @param {int} [maxWait] max milliseconds to wait before sending out, defaults to wait * 10 or 100
+           */
+          debounce: function(fn, ctx, wait, maxWait) {
+            var start, cancelTimer, args;
+            if( typeof(ctx) === 'number' ) {
+              maxWait = wait;
+              wait = ctx;
+              ctx = null;
+            }
+
+            if( typeof wait !== 'number' ) {
+              throw new Error('Must provide a valid integer for wait. Try 0 for a default');
+            }
+            if( typeof(fn) !== 'function' ) {
+              throw new Error('Must provide a valid function to debounce');
+            }
+            if( !maxWait ) { maxWait = wait*10 || 100; }
+
+            // clears the current wait timer and creates a new one
+            // however, if maxWait is exceeded, calles runNow() immediately
+            function resetTimer() {
+              if( cancelTimer ) {
+                cancelTimer();
+                cancelTimer = null;
+              }
+              if( start && Date.now() - start > maxWait ) {
+                utils.compile(runNow);
+              }
+              else {
+                if( !start ) { start = Date.now(); }
+                cancelTimer = utils.wait(runNow, wait);
+              }
+            }
+
+            // Clears the queue and invokes all of the functions awaiting notification
+            function runNow() {
+              cancelTimer = null;
+              start = null;
+              fn.apply(ctx, args);
+            }
+
+            function debounced() {
+              args = Array.prototype.slice.call(arguments, 0);
+              resetTimer();
+            }
+            debounced.running = function() {
+              return start > 0;
+            };
+
+            return debounced;
           },
 
           assertValidRef: function(ref, msg) {
@@ -1656,8 +1856,18 @@ if ( typeof Object.getPrototypeOf !== "function" ) {
             return def.promise;
           },
 
-          compile: function(fn, wait) {
-            return $timeout(fn||function() {}, wait||0);
+          wait: function(fn, wait) {
+            var to = $timeout(fn, wait||0);
+            return function() {
+              if( to ) {
+                $timeout.cancel(to);
+                to = null;
+              }
+            };
+          },
+
+          compile: function(fn) {
+            return $timeout(fn||function() {});
           },
 
           deepCopy: function(obj) {
@@ -1673,17 +1883,30 @@ if ( typeof Object.getPrototypeOf !== "function" ) {
             return newCopy;
           },
 
-          parseScopeData: function(rec) {
-            var out = {};
-            utils.each(rec, function(v,k) {
-              out[k] = utils.deepCopy(v);
+          trimKeys: function(dest, source) {
+            utils.each(dest, function(v,k) {
+              if( !source.hasOwnProperty(k) ) {
+                delete dest[k];
+              }
             });
-            out.$id = rec.$id;
-            out.$priority = rec.$priority;
-            if( rec.hasOwnProperty('$value') ) {
-              out.$value = rec.$value;
+          },
+
+          extendData: function(dest, source) {
+            utils.each(source, function(v,k) {
+              dest[k] = utils.deepCopy(v);
+            });
+            return dest;
+          },
+
+          scopeData: function(dataOrRec) {
+            var data = {
+              $id: dataOrRec.$id,
+              $priority: dataOrRec.$priority
+            };
+            if( dataOrRec.hasOwnProperty('$value') ) {
+              data.$value = dataOrRec.$value;
             }
-            return out;
+            return utils.extendData(data, dataOrRec);
           },
 
           updateRec: function(rec, snap) {
@@ -1699,20 +1922,25 @@ if ( typeof Object.getPrototypeOf !== "function" ) {
               delete rec.$value;
             }
 
-            // remove keys that don't exist anymore
-            utils.each(rec, function(val, key) {
-              if( !data.hasOwnProperty(key) ) {
-                delete rec[key];
-              }
-            });
-
-            // apply new values
+            // apply changes: remove old keys, insert new data, set priority
+            utils.trimKeys(rec, data);
             angular.extend(rec, data);
             rec.$priority = snap.getPriority();
 
             return !angular.equals(oldData, rec) ||
               oldData.$value !== rec.$value ||
               oldData.$priority !== rec.$priority;
+          },
+
+          applyDefaults: function(rec, defaults) {
+            if( angular.isObject(defaults) ) {
+              angular.forEach(defaults, function(v,k) {
+                if( !rec.hasOwnProperty(k) ) {
+                  rec[k] = v;
+                }
+              });
+            }
+            return rec;
           },
 
           dataKeys: function(obj) {
@@ -1724,12 +1952,22 @@ if ( typeof Object.getPrototypeOf !== "function" ) {
           },
 
           each: function(obj, iterator, context) {
-            angular.forEach(obj, function(v,k) {
-              var c = k.charAt(0);
-              if( c !== '_' && c !== '$' && c !== '.' ) {
-                iterator.call(context, v, k, obj);
+            if(angular.isObject(obj)) {
+              for (var k in obj) {
+                if (obj.hasOwnProperty(k)) {
+                  var c = k.charAt(0);
+                  if( c !== '_' && c !== '$' && c !== '.' ) {
+                    iterator.call(context, obj[k], k, obj);
+                  }
+                }
               }
-            });
+            }
+            else if(angular.isArray(obj)) {
+              for(var i = 0, len = obj.length; i < len; i++) {
+                iterator.call(context, obj[i], i, obj);
+              }
+            }
+            return obj;
           },
 
           /**
@@ -1755,7 +1993,7 @@ if ( typeof Object.getPrototypeOf !== "function" ) {
             else {
               dat = {};
               utils.each(rec, function (v, k) {
-                dat[k] = v;
+                dat[k] = stripDollarPrefixedKeys(v);
               });
             }
             if( angular.isDefined(rec.$value) && Object.keys(dat).length === 0 && rec.$value !== null ) {
@@ -1781,4 +2019,15 @@ if ( typeof Object.getPrototypeOf !== "function" ) {
         return utils;
       }
     ]);
+
+    function stripDollarPrefixedKeys(data) {
+      if( !angular.isObject(data) ) { return data; }
+      var out = angular.isArray(data)? [] : {};
+      angular.forEach(data, function(v,k) {
+        if(typeof k !== 'string' || k.charAt(0) !== '$') {
+          out[k] = stripDollarPrefixedKeys(v);
+        }
+      });
+      return out;
+    }
 })();

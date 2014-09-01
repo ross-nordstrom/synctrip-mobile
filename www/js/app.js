@@ -112,7 +112,8 @@ angular.module('synctrip', ['ionic', 'firebase.utils', 'google-maps', 'synctrip.
       authRequired: true,
       views: {
         'main': {
-          templateUrl: "templates/trips/tabs.html"
+          templateUrl: "templates/trips/tabs.html",
+          controller: 'TripCtrl'
         },
         'left': {
           templateUrl: "templates/trips/list.brief.html",
@@ -131,8 +132,7 @@ angular.module('synctrip', ['ionic', 'firebase.utils', 'google-maps', 'synctrip.
       authRequired: true,
       views: {
         'first-tab': {
-           templateUrl: "templates/trips/details.html",
-           controller: 'TripCtrl'
+           templateUrl: "templates/trips/details.html"
         }
       },
       resolve: resolveUser
@@ -144,7 +144,6 @@ angular.module('synctrip', ['ionic', 'firebase.utils', 'google-maps', 'synctrip.
       views: {
         'second-tab': {
            templateUrl: "templates/trips/destinations.html",
-           controller: 'TripCtrl'
         }
       },
       resolve: resolveUser
@@ -156,7 +155,6 @@ angular.module('synctrip', ['ionic', 'firebase.utils', 'google-maps', 'synctrip.
       views: {
         'third-tab': {
            templateUrl: "templates/trips/map.html",
-           controller: 'TripCtrl'
         }
       },
       resolve: resolveUser

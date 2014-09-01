@@ -1,4 +1,4 @@
-<ion-view title="Trip sdflkajsdfDetails">
+<ion-view title="Trip Details">
   <ion-content>
     <div>
       <div class="item item-thumbnail-left" ng-click="showDetails = !showDetails">
@@ -11,7 +11,7 @@
         </h1>
         <p ng-show="showDetails">{{trip.details}}</p>
       </div>
-      <img ng-src="{{trip.pic || 'http://whitemagicsamoyeds.com/images/slides/14_Alexia_and_Her_Litter_Mates-2.jpg'}}">
+      <img ng-src="{{trip.pic || 'http://whitemagicsamoyeds.com/images/slides/14_Alexia_and_Her_Litter_Mates-2.jpg'}}" style="width:100%;">
     </div>
   </ion-content>
 </ion-view>

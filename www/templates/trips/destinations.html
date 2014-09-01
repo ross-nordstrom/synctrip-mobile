@@ -1,19 +1,19 @@
 <ion-view title="Trip Destinations">
 <ion-content class="padding">
-   <form ng-submit="addDestination($scope)">
+   <ion-list>
+      <ion-item ng-repeat="destination in trip.destinations">{{destination.formatted_address}}</ion-item>
+   </ion-list>
+   <form ng-submit="addDestination($scope.newDestination, $scope.newDestinationDetails)">
       <div class="item item-input">
          <!-- <label class="item-input-wrapper"> -->
-         <input type="text" ng-autocomplete ng-model="newDestination" options="(cities)" details="newDestinationDetails"/>
+         <input type="text" ng-autocomplete ng-model="newDestination" options="autocompleteOptions" details="newDestinationDetails" placeholder="Add a location"/>
          <!-- </label> -->
-         <button class="button button-balanced">
-         <i class="icon ion-plus"></i>
+         <button class="button button-balanced" ng-show="!!newDestination && !!newDestinationDetails">
+            <i class="icon ion-plus"></i>
          </button>
       </div>
    </form>
    <p>Place: {{newDestination}}</p>
    <p style="max-height:100px; overflow-y:scroll;">Details: {{newDestinationDetails}}</p>
-   <ion-list>
-      <ion-item ng-repeat="destination in trip.destinations"></ion-item>
-   </ion-list>
 </ion-content>
 </ion-view>

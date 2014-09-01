@@ -1,5 +1,7 @@
 angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synctrip.service.trips'])
-.controller('TripCtrl', ['$scope','$stateParams','$ionicModal','Trips', 'currentUser', function($scope, $stateParams, $ionicModal, Trips, currentUser) {
+.controller('TripCtrl', ['$scope','$rootScope','$stateParams','$ionicModal','Trips', 'currentUser', function($scope, $rootScope, $stateParams, $ionicModal, Trips, currentUser) {
+  var destinationDetailsWhitelist = ['address_components', 'formatted_address', 'geometry', 'icon', 'name', 'place_id', 'url', 'vicinity'];
+
   $scope.currentUser = currentUser;
   $scope.trip = Trips.find($stateParams.id);
   $scope.editModal = null;
@@ -10,6 +12,16 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     },
     zoom: 4
   };
+  $scope.autocompleteOptions = {
+    type: "(cities)"
+  }
+
+  $scope.newDestination;
+  $scope.newDestinationDetails;
+
+  $scope.$watch('newDestination', function(foo) {
+    console.log('new dest???? ', foo, $scope.newDestination);
+  })
 
   $scope.doRefresh = function() {
     $scope.trip = Trips.find($scope.currentUser);
@@ -18,12 +30,25 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     });
   }
 
-  $scope.addDestination = function(sc) {
-    console.log("add destination!", sc, $scope.newDestination, $scope.newDestinationDetails);
-    if(!$scope.newDestinationDetails || !$scope.newDestinationDetails.formatted_address || $scope.newDestinationDetails.formatted_address.length == 0) return;
-    $scope.trip.destinations.push($scope.newDestinationDetails);
-    $scope.newDestinationDetails = null;
-    $scope.newDestination = '';
+  $scope.addDestination = function(place, details) {
+    console.log("add destination!", place, details, this.newDestination, this.newDestinationDetails);
+    if(!this.newDestinationDetails || !this.newDestinationDetails.formatted_address || this.newDestinationDetails.formatted_address.length == 0) return;
+    if(this.newDestinationDetails.formatted_address == this.trip.destinations[this.trip.destinations.length - 1]) return;
+    var that = this;
+
+    this.trip.destinations = this.trip.destinations || [];
+    var details = {};
+    var newDestinationDetails = this.newDestinationDetails;
+    angular.forEach(destinationDetailsWhitelist, function(key) {
+      if(newDestinationDetails.hasOwnProperty(key)) {
+        details[key] = newDestinationDetails[key];
+      }
+    });
+    this.trip.destinations.push(details);
+    this.trip.$save().then(function(){
+      that.newDestinationDetails = null;
+      that.newDestination = '';
+    })
   }
 
   //init the modal
