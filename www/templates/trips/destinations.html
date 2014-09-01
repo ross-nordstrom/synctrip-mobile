@@ -1,5 +1,14 @@
 <ion-view title="Trip Destinations">
 <ion-content class="padding">
+   <div class="row padding">
+     <div class="col" ng-repeat="(idx,item) in overviewItems">
+      <a class="item item-icon-left">
+         <i class="icon {{item.icon}}"></i>
+         <h2>{{item.title}}</h2>
+         <p>{{trip[item.key] || 'N/A'}}</p>
+      </a>
+      </div>
+   </div>
    <ion-list>
       <ion-item ng-repeat="destination in trip.destinations">
          <h2>{{destination.name}}</h2>
@@ -18,5 +27,6 @@
    </form>
    <p>Place: {{newDestination}}</p>
    <p style="max-height:100px; overflow-y:scroll;">Details: {{newDestinationDetails}}</p>
+   <p>Directions <button ng-click="calculateRoute()"><i class="icon ion-refresh"></i></button> {{trip.directions}}</p>
 </ion-content>
 </ion-view>

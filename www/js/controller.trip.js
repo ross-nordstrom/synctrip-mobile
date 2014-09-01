@@ -1,5 +1,6 @@
 angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synctrip.service.trips'])
-.controller('TripCtrl', ['$scope','$rootScope','$stateParams','$ionicModal','Trips', 'currentUser', function($scope, $rootScope, $stateParams, $ionicModal, Trips, currentUser) {
+.controller('TripCtrl', ['$scope','$rootScope','$stateParams','$ionicModal','Trips', 'Gmap', 'currentUser',
+  function($scope, $rootScope, $stateParams, $ionicModal, Trips, Gmap, currentUser) {
   var destinationDetailsWhitelist = ['address_components', 'formatted_address', 'geometry', 'icon', 'place_id', 'url', 'vicinity'];
 
   $scope.currentUser = currentUser;
@@ -18,6 +19,11 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
 
   $scope.newDestination;
   $scope.newDestinationDetails;
+
+  $scope.overviewItems = [
+    { title: 'Distance', icon: 'ion-model-s', key: 'total_distance' },
+    { title: 'Duration', icon: 'ion-clock', key: 'total_duration' }
+  ];
 
   $scope.doRefresh = function() {
     $scope.trip = Trips.find($scope.currentUser);
@@ -69,16 +75,51 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
   * Navigation management
   */
   $scope.getRoute = function(callback) {
-    if($scope.trip.destinations && $scope.trip.destinations.length > 1) {
-      var count = $scope.trip.destinations.length;
-      var origin = $scope.trip.destinations[0].details.formatted_address;
-      var destination = $scope.trip.destinations[count-1].details.formatted_address;
-      var waypoints = [];
-      for(var i = 1; i < count-1; i++) {
-        waypoints.push($scope.trip.destinations[i].details.formatted_address);
-      }
+    var count = 0;
+    if($scope.trip.destinations && (count = $scope.trip.destinations.length) > 1) {
+      var destinations = $scope.trip.destinations;
+      var origin = destinations[0].details.formatted_address;
+      var destination = destinations[count-1].details.formatted_address;
+      var waypoints = destinations.slice(1, count - 2).map(function(destination) {
+        return destination.details.formatted_address;
+      });
       Gmap.getRoute(origin, destination, waypoints, callback);
     }
+  }
+
+  $scope.calculateRoute = function() {
+    $scope.getRoute(function(response) {
+      if(!!response) {
+
+        console.log("GOOGLE DIRECTIONS ++> ", response);
+
+        $scope.trip.destinations[0].duration = '';
+        $scope.trip.destinations[0].distance = '';
+
+        $scope.trip.total_duration = 0;
+        $scope.trip.total_distance = 0;
+        for(var i=1; i < $scope.trip.destinations.length; i++) {
+          $scope.trip.destinations[i].duration = response.routes[0].legs[i-1].duration.text;
+          $scope.trip.destinations[i].distance = response.routes[0].legs[i-1].distance.text;
+
+          $scope.trip.total_duration += response.routes[0].legs[i-1].duration.value;
+          $scope.trip.total_distance += response.routes[0].legs[i-1].distance.value;
+        }
+
+        // Convert the total duration/distances to be human readable
+        $scope.trip.total_duration = Gmap.durationString($scope.trip.total_duration);
+        $scope.trip.total_distance = Gmap.distanceString($scope.trip.total_distance);
+
+        // $scope.trip.$save();
+      }
+    });
+  } // calculateRoute()
+
+  $scope.updateDirections = function() {
+    console.log("update directions");
+    return this.getRoute(function(foo,bar,baz) {
+      console.log("Got route? ", foo,bar,baz);
+    })
   }
 
 }]); // controller
