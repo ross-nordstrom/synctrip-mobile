@@ -8,30 +8,35 @@
   <form name="editDestinationForm" ng-submit="trip.$save() && editDestinationModal.hide()">
     <div class="list">
       <div class="list">
+        <a href="{{destination.details.url}}"  target="_blank" class="item item-icon-right">
+          <h2>{{destination.name}}</h2>
+          <p>{{destination.info || destination.details.formatted_address}}</p>
+          <i class="icon ion-map"></i>
+        </a>
         <label class="item item-input item-floating-label">
           <span class="input-label">About</span>
           <input type="text" placeholder="About" ng-model="destination.info">
         </label>
         <label class="item item-input" ng-hide="destinationIdx === 0">
           <span class="input-label">Arrive Date</span>
-          <input type="date" placeholder="Arrive Date" name="arriveDate" ng-model="destination.arriveDate" min="{{fakeMin()}}">
+          <input type="date" placeholder="Arrive Date" name="arriveDate" ng-model="destination.arrive.date" ng-disabled="destination.arrive.disabled" min="{{fakeMin()}}">
         </label>
-        <label class="item item-input" ng-hide="destinationIdx === 0 || !destination.arriveDate">
+        <label class="item item-input" ng-hide="destinationIdx === 0 || !destination.arrive.date">
           <span class="input-label">Arrive Time</span>
-          <input type="time" placeholder="Arrive Time" name="arriveTime" ng-model="destination.arriveTime">
+          <input type="time" placeholder="Arrive Time" name="arriveTime" ng-model="destination.arrive.time" ng-disabled="destination.arrive.disabled">
         </label>
-        <label class="item item-input" ng-hide="destinationIdx === 0 || !destination.arriveDate">
+        <label class="item item-input" ng-hide="">
           <span class="input-label">Duration</span>
-          <input type="number" placeholder="Days" name="durationDays" ng-model="destination.durationDays">
-          <input type="time" placeholder="Hours:Minutes" ng-model="destination.durationTime">
+          <input type="number" placeholder="Days" name="durationDays" ng-model="destination.stay.days" ng-disabled="destination.stay.disabled">
+          <input type="time" placeholder="Hours:Minutes" name="durationTime" ng-model="destination.stay.time" ng-disabled="destination.stay.disabled">
         </label>
-        <label class="item item-input" ng-hide="destinationIdx === (trip.destinations.length - 1)">
+        <label class="item item-input" ng-hide="">
           <span class="input-label">Depart Date</span>
-          <input type="date" placeholder="Depart" ng-model="destination.departDate" min="{{fakeMin()}}">
+          <input type="date" placeholder="Depart" ng-model="destination.depart.date" ng-disabled="destination.depart.disabled">
         </label>
-        <label class="item item-input" ng-hide="destinationIdx === (trip.destinations.length - 1) || !destination.departDate">
+        <label class="item item-input" ng-hide="!destination.depart.date">
           <span class="input-label">Depart Time</span>
-          <input type="time" placeholder="Depart" ng-model="destination.departTime">
+          <input type="time" placeholder="Depart" ng-model="destination.depart.time" ng-disabled="destination.depart.disabled">
         </label>
         <label class="item item-input item-floating-label">
           <span class="input-label">Notes</span>

@@ -1,6 +1,6 @@
 angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synctrip.service.trips'])
-.controller('TripCtrl', ['$scope','$rootScope','$stateParams','$ionicModal','Trips', 'Gmap', 'currentUser',
-  function($scope, $rootScope, $stateParams, $ionicModal, Trips, Gmap, currentUser) {
+.controller('TripCtrl', ['$scope','$rootScope','$stateParams','$ionicModal','Trips', 'Gmap', 'currentUser', '$filter',
+  function($scope, $rootScope, $stateParams, $ionicModal, Trips, Gmap, currentUser, $filter) {
   var destinationDetailsWhitelist = ['address_components', 'formatted_address', 'geometry', 'icon', 'place_id', 'url', 'vicinity'];
 
   $scope.currentUser = currentUser;
@@ -75,6 +75,10 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     focusFirstInput: true
   }).then(function (modal) {
     $scope.editTripModal = modal;
+    $scope.$watch('[destination.arrive,destination.stay,destination.depart]', function() {
+      console.log("WATCH TRIGGERED: ", $scope.destination);
+      $scope.updateTiming();
+    },true)
   });
 
   //Cleanup the modal when we're done with it!
@@ -94,6 +98,55 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     console.log("Save changes to destination ", $scope.destination);
     $scope.destination = null;
   }
+  $scope.updateTiming = function() {
+    if(!$scope.destination) return;
+
+    var arriveSet = false;
+    var staySet = false;
+    var departSet = false;
+
+    if($scope.destination.arrive && !$scope.destination.arrive.disabled) {
+      // User set the arrive time, so check and possibly set one of the others
+      arriveSet = true;
+    }
+    if($scope.destination.stay && !$scope.destination.stay.disabled) {
+      // User set the stay time, so check and possibly set one of the others
+      staySet = true;
+    }
+    if($scope.destination.depart && !$scope.destination.depart.disabled) {
+      // User set the depart time, so check and possibly set one of the others
+      departSet = true;
+    }
+
+    if(arriveSet && staySet) {
+      $scope.destination.depart = $scope.destination.depart || {};
+      $scope.destination.depart.disabled = true;
+      $scope.destination.depart.date = $filter('date')($scope.addDays($scope.destination.arrive.date, $scope.destination.stay.days), 'yyyy-MM-dd');
+
+      if($scope.destination.arrive.time) {
+        var arriveHours = parseInt($scope.destination.arrive.time ? $scope.destination.arrive.time.split(':')[0] : 0);
+        var arriveMinutes = parseInt($scope.destination.arrive.time ? $scope.destination.arrive.time.split(':')[1] : 0);
+
+        var stayHours = parseInt($scope.destination.stay.time ? $scope.destination.stay.time.split(':')[0] : 0);
+        var stayMinutes = parseInt($scope.destination.stay.time ? $scope.destination.stay.time.split(':')[1] : 0);
+
+        var departMinutes = arriveMinutes + stayMinutes;
+        var departHours = (arriveHours + stayHours) + Math.floor(departMinutes/60);
+        var departTime = [departHours, departMinutes%60].join(':');
+        // TODO - Rollover logic to increment depart.date if needed
+        if(departTime != $scope.destination.depart.time) {
+          $scope.destination.depart.time = departTime;
+        }
+      }
+    } else if(arriveSet && departSet) {
+      $scope.destination.stay.disabled = true;
+      // TODO: Force stay
+    } else if(staySet && departSet) {
+      $scope.destination.arrive.disabled = true;
+      // TODO: Force arrive
+    }
+  }
+
   //init the modal
   $ionicModal.fromTemplateUrl('templates/destinations/edit.modal.html', {
     scope: $scope,
@@ -164,6 +217,20 @@ $scope.fakeMin = function() { return '2014-09-05'; }
     return this.getRoute(function(foo,bar,baz) {
       console.log("Got route? ", foo,bar,baz);
     })
+  }
+
+ /****************************************************************************
+  * Utilities
+  */
+  $scope.addDays = function(aDate, someDays) {
+    var newDate = new Date(aDate.valueOf());
+    newDate.setDate(newDate.getDate() + someDays);
+    return newDate;
+  }
+  $scope.addMinutes = function(aDate, someMinutes) {
+    var newDate = new Date(aDate.valueOf());
+    newDate.setMinutes(newDate.getMinutes() + someMinutes);
+    return newDate;
   }
 
 }]); // controller
