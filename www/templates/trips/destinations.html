@@ -44,8 +44,8 @@
                <p>{{ (departDateTime(destination) - arriveDateTime(destination))/1000 | durationString:'brief' }}</p>
             </div>
             <div class="col" ng-show="destination.arriveDate || destination.departDate">
-               <p ng-show="destination.arriveDate"><strong>Arrive:</strong> {{ arriveDateTime(destination) }}</p>
-               <p ng-show="destination.departDate"><strong>Depart:</strong> {{ departDateTime(destination) }}</p>
+               <p class="hidden-sm" ng-show="destination.arriveDate"><strong>&nbsp;Arrive:</strong> {{ arriveDateTime(destination) | date:'M/d - h:mm a' }}</p>
+               <p class="hidden-sm" ng-show="destination.departDate"><strong>Depart:</strong> {{ departDateTime(destination) | date:'M/d - h:mm a' }}</p>
             </div>
          </div>
       </ion-item>

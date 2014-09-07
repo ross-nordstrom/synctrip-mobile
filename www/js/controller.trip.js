@@ -60,6 +60,13 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
       that.calculateRoute();
     })
   }
+  $scope.removeDestination = function(destinationIdx) {
+    console.log("REMOVE DEST: ", destinationIdx);
+    if(typeof destinationIdx !== 'number' || destinationIdx < 0 || destinationIdx >= this.trip.destinations.length) return;
+
+    this.trip.destinations.splice(destinationIdx, 1); // Remove 1 element from destinationIdx
+    this.trip.$save()
+  }
 
   //init the modal
   $ionicModal.fromTemplateUrl('templates/trips/edit.modal.html', {

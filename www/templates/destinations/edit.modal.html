@@ -20,6 +20,11 @@
           <span class="input-label">Arrive Time</span>
           <input type="time" placeholder="Arrive Time" name="arriveTime" ng-model="destination.arriveTime">
         </label>
+        <label class="item item-input" ng-hide="destinationIdx === 0 || !destination.arriveDate">
+          <span class="input-label">Duration</span>
+          <input type="number" placeholder="Days" name="durationDays" ng-model="destination.durationDays">
+          <input type="time" placeholder="Hours:Minutes" ng-model="destination.durationTime">
+        </label>
         <label class="item item-input" ng-hide="destinationIdx === (trip.destinations.length - 1)">
           <span class="input-label">Depart Date</span>
           <input type="date" placeholder="Depart" ng-model="destination.departDate" min="{{fakeMin()}}">
@@ -36,6 +41,9 @@
       <div class="list list-inset">
       <button class="button button-block button-stable" type="submit">
         Save Details
+      </button>
+      <button class="button button-block button-assertive" ng-click="removeDestination(destinationIdx)">
+        Delete
       </button>
       </div>
     </div>
