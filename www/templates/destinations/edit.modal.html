@@ -5,7 +5,7 @@
   </div>
   <ion-content class="padding">
   <br><br>
-  <form name="editDestinationForm" ng-submit="trip.$save() && editDestinationModal.hide()">
+  <form name="editDestinationForm" ng-submit="propagateTimings(destinationIdx) && trip.$save() && editDestinationModal.hide()">
     <div class="list">
       <div class="list">
         <a href="{{destination.details.url}}"  target="_blank" class="item item-avatar item-icon-right">

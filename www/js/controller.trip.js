@@ -2,6 +2,10 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
 .controller('TripCtrl', ['$scope','$rootScope','$stateParams','$ionicModal','Trips', 'Gmap', 'currentUser', '$filter',
   function($scope, $rootScope, $stateParams, $ionicModal, Trips, Gmap, currentUser, $filter) {
   var destinationDetailsWhitelist = ['address_components', 'formatted_address', 'geometry', 'icon', 'place_id', 'url', 'vicinity'];
+  var _MS_PER_MINUTE = 1000 * 60;
+  var _MS_PER_HOUR = 1000 * 60 * 60;
+  var _MS_PER_DAY = 1000 * 60 * 60 * 24;
+  var _S_PER_DAY = 60 * 60 * 24;
 
   $scope.currentUser = currentUser;
   $scope.trip = Trips.find($stateParams.id);
@@ -23,7 +27,8 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
 
   $scope.overviewItems = [
     { title: 'Distance', icon: 'ion-model-s', key: 'total_distance', type: 'distance' },
-    { title: 'Duration', icon: 'ion-clock', key: 'total_duration', type: 'duration' }
+    { title: 'Travel Time', icon: 'ion-clock', key: 'total_travel_time', type: 'duration' },
+    { title: 'Duration', icon: 'ion-calendar', key: 'total_duration', type: 'duration' }
   ];
 
   $scope.doRefresh = function() {
@@ -64,6 +69,36 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     this.trip.destinations.splice(destinationIdx, 1); // Remove 1 element from destinationIdx
     this.trip.$save()
   }
+  $scope.propagateTimings = function(idx) {
+     if(idx < 0 || idx >= this.trip.destinations.length) return false;
+     var dest = this.trip.destinations[idx];
+     if(idx > 0 && dest.arrive && dest.arrive.date) this.propagateTimingsBack(idx - 1, dest);
+     if(idx < (this.trip.destinations.length-1) && dest.depart && dest.depart.date) this.propagateTimingsForward(idx + 1, dest);
+     console.log("post propagation: ", this.trip.destinations);
+     return false;
+  }
+  $scope.propagateTimingsForward = function(idx, triggeringDestination) {
+     if(idx < 0 || idx >= this.trip.destinations.length || !triggeringDestination.depart || !triggeringDestination.depart.date) return true;
+     return true;
+     var destination = this.trip.destinations[idx];
+     destination.arrive.date = this.addDays(triggeringDestination.depart.date, destination.duration / _S_PER_DAY);
+
+     if(triggeringDestination.depart.time) {
+       var departHours = parseInt(destination.depart.time ? destination.depart.time.split(':')[0] : 0);
+       var departMinutes = parseInt(destination.depart.time ? destination.depart.time.split(':')[1] : 0);
+
+       var arriveMinutes = departMinutes + destination.duration%(60*60);
+       var arriveHours = (departHours + Math.floor(destination.duration/(60*60)) + Math.floor(arriveMinutes/60));
+       var arriveTime = [arriveHours, arriveMinutes%60].join(':');
+       destination.arrive.time = arriveTime;
+     }
+     this.trip.destinations[idx] = this.updateTiming(destination);
+     if(destination.depart && destination.depart.date) return this.propagateTimingsForward(idx + 1, destination);
+     else return true;
+  }
+  $scope.propagateTimingsBack = function(idx, destination) {
+     return false;
+  }
 
   //init the modal
   $ionicModal.fromTemplateUrl('templates/trips/edit.modal.html', {
@@ -100,15 +135,15 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     var staySet = false;
     var departSet = false;
 
-    if(destination.arrive && !destination.arrive.disabled) {
+    if(destination.arrive && destination.arrive.date && destination.arrive.type !== 'auto') {
       // User set the arrive time, so check and possibly set one of the others
       arriveSet = true;
     }
-    if(destination.stay && !destination.stay.disabled) {
+    if(destination.stay && (destination.stay.days || destination.stay.hours || destination.stay.minutes) && destination.stay.type !== 'auto') {
       // User set the stay time, so check and possibly set one of the others
       staySet = true;
     }
-    if(destination.depart && !destination.depart.disabled) {
+    if(destination.depart && destination.depart.date && destination.depart.type !== 'auto') {
       // User set the depart time, so check and possibly set one of the others
       departSet = true;
     }
@@ -121,23 +156,15 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     if(arriveSet && staySet) {
       destination.depart = destination.depart || {};
       destination.depart.disabled = true;
-      destination.depart.date = $filter('date')($scope.addDays(destination.arrive.date, destination.stay.days), 'yyyy-MM-dd');
-
-      if(destination.arrive.time) {
-        var arriveHours = parseInt(destination.arrive.time ? destination.arrive.time.split(':')[0] : 0);
-        var arriveMinutes = parseInt(destination.arrive.time ? destination.arrive.time.split(':')[1] : 0);
-
-        var stayHours = parseInt(destination.stay.hours ? destination.stay.hours : 0);
-        var stayMinutes = parseInt(destination.stay.minutes ? destination.stay.minutes : 0);
-
-        var departMinutes = arriveMinutes + stayMinutes;
-        var departHours = (arriveHours + stayHours) + Math.floor(departMinutes/60);
-        var departTime = [departHours, departMinutes%60].join(':');
-        // TODO - Rollover logic to increment depart.date if needed
-        if(departTime != destination.depart.time) {
-          destination.depart.time = departTime;
-        }
-      }
+      destination.depart.type = 'auto';
+      var arriveDateTime = new Date(destination.arrive.date + ' ' + (destination.arrive.time || ''))
+      var departDateTime = new Date(arriveDateTime.valueOf() 
+                                    + (destination.stay.days || 0)*_MS_PER_DAY
+                                    + (destination.stay.hours || 0)*_MS_PER_HOUR
+                                    + (destination.stay.minutes || 0)*_MS_PER_MINUTE
+                                   );
+      destination.depart.date = $filter('date')(departDateTime, 'yyyy-MM-dd');
+      destination.depart.time = $filter('date')(departDateTime, 'HH:mm');
     } else if(arriveSet && departSet) {
       destination.stay = destination.stay || {};
       destination.stay.disabled = true;
@@ -153,8 +180,17 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
       destination.stay.minutes = departMinutes - arriveMinutes;
 
     } else if(staySet && departSet) {
+      if(!destination.arrive) destination.arrive = {};
       destination.arrive.disabled = true;
-      // TODO: Force arrive
+      destination.arrive.type = 'auto';
+      var departDateTime = new Date(destination.depart.date + ' ' + (destination.depart.time || ''))
+      var arriveDateTime = new Date(departDateTime.valueOf() 
+                                    - (destination.stay.days || 0)*_MS_PER_DAY
+                                    - (destination.stay.hours || 0)*_MS_PER_HOUR
+                                    - (destination.stay.minutes || 0)*_MS_PER_MINUTE
+                                   );
+      destination.arrive.date = $filter('date')(arriveDateTime, 'yyyy-MM-dd');
+      destination.arrive.time = $filter('date')(arriveDateTime, 'HH:mm');
     }
     return destination;
   }
@@ -215,13 +251,13 @@ $scope.fakeMin = function() { return '2014-09-05'; }
         $scope.trip.destinations[0].duration = '';
         $scope.trip.destinations[0].distance = '';
 
-        $scope.trip.total_duration = 0;
+        $scope.trip.total_travel_time = 0;
         $scope.trip.total_distance = 0;
         for(var i=1; i < $scope.trip.destinations.length; i++) {
           $scope.trip.destinations[i].duration = response.routes[0].legs[i-1].duration.value;
           $scope.trip.destinations[i].distance = response.routes[0].legs[i-1].distance.value;
 
-          $scope.trip.total_duration += response.routes[0].legs[i-1].duration.value;
+          $scope.trip.total_travel_time += response.routes[0].legs[i-1].duration.value;
           $scope.trip.total_distance += response.routes[0].legs[i-1].distance.value;
         }
 
@@ -253,7 +289,6 @@ $scope.fakeMin = function() { return '2014-09-05'; }
     return newDate;
   }
   // a and b are javascript Date objects
-  var _MS_PER_DAY = 1000 * 60 * 60 * 24;
   $scope.diffDays = function(a, b) {
     if(typeof a === 'string') { a = new Date(a.split('-').join('/')); }
     if(typeof b === 'string') { b = new Date(b.split('-').join('/')); }
