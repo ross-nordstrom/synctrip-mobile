@@ -16,36 +16,34 @@
    <ion-list class="list-no-borders">
       <ion-item ng-repeat="(idx,destination) in trip.destinations" ng-click="editDestination(idx)">
          <div eat-click class="row row-dense" ng-show="destination.distance || destination.duration">
-            <div class="col col-offset-10" ng-show="destination.distance">
+            <div class="col col-offset-10" ng-show="destination.distance || destination.duration">
                <div class="item item-icon-left">
                   <i class="icon ion-model-s"></i>
-                  <p>{{destination.distance | distanceString}}</p>
-               </div>
-            </div>
-            <div class="col" ng-show="destination.duration">
-               <div class="item item-icon-left item-small">
-                  <i class="icon ion-ios7-timer-outline"></i>
-                  <p>{{destination.duration | durationString:'minimal'}}</p>
+                  <p>
+                     <span ng-show="destination.distance">
+                        {{destination.distance | distanceString}}</span><span ng-show="destination.duration && destination.distance">, </span>
+                     <span ng-show="destination.duration">{{destination.duration | durationString:'minimal'}}</span>
+                  </p>
                </div>
             </div>
          </div>
          <div class="row">
-            <div class="col col-10 calendar-stack" ng-show="destination.arriveDate || destination.departDate">
+            <div class="col col-10 calendar-stack" ng-show="destination.arrive.date || destination.depart.date">
                <i class="icon ion-calendar"></i>
-               <h4 ng-show="destination.arriveDate">{{ destination.arriveDate | date:'dd' }}</h4>
-               <h4 ng-hide="destination.arriveDate">{{ destination.departDate | date:'dd' }}</h4>
+               <h4 ng-show="destination.arrive.date">{{ destination.arrive.date | date:'dd' }}</h4>
+               <h4 ng-hide="destination.arrive.date">{{ destination.depart.date | date:'dd' }}</h4>
             </div>
             <div class="col col-50">
                <h2>{{destination.name}}</h2>
                <p>{{destination.info || destination.details.formatted_address}}</p>
             </div>
-            <div class="col-10" ng-show="destination.arriveDate && destination.departDate">
+            <div class="col-20" ng-show="destination.arrive.date && destination.depart.date">
                <i class="icon ion-ios7-clock-outline"></i>
                <p>{{ (departDateTime(destination) - arriveDateTime(destination))/1000 | durationString:'brief' }}</p>
             </div>
-            <div class="col" ng-show="destination.arriveDate || destination.departDate">
-               <p class="hidden-sm" ng-show="destination.arriveDate"><strong>&nbsp;Arrive:</strong> {{ arriveDateTime(destination) | date:'M/d - h:mm a' }}</p>
-               <p class="hidden-sm" ng-show="destination.departDate"><strong>Depart:</strong> {{ departDateTime(destination) | date:'M/d - h:mm a' }}</p>
+            <div class="col hidden-xs" ng-show="destination.arrive.time || destination.depart.time">
+               <p ng-show="destination.arrive.time"><strong>&nbsp;Arrive:</strong> {{ arriveDateTime(destination) | date:'h:mm a' }}</p>
+               <p ng-show="destination.depart.time"><strong>Depart:</strong> {{ departDateTime(destination) | date:'h:mm a' }}</p>
             </div>
          </div>
       </ion-item>

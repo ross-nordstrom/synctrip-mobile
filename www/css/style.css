@@ -177,11 +177,6 @@ img.banner {
 .visible-md { display: none; }
 .visible-lg { display: none; }
 
-.hidden-xs { display: inherit; }
-.hidden-sm { display: inherit; }
-.hidden-md { display: inherit; }
-.hidden-lg { display: inherit; }
-
 /* Large desktop */
 @media (min-width: 1200px) {
   .visible-lg { display: inherit; }
