@@ -118,6 +118,11 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
       departSet = true;
     }
 
+    if(arriveSet && staySet && departSet) {
+      // Contradiction! Clear depart
+      $scope.destination.depart = {};
+      departSet = false;
+    }
     if(arriveSet && staySet) {
       $scope.destination.depart = $scope.destination.depart || {};
       $scope.destination.depart.disabled = true;
@@ -127,8 +132,8 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
         var arriveHours = parseInt($scope.destination.arrive.time ? $scope.destination.arrive.time.split(':')[0] : 0);
         var arriveMinutes = parseInt($scope.destination.arrive.time ? $scope.destination.arrive.time.split(':')[1] : 0);
 
-        var stayHours = parseInt($scope.destination.stay.time ? $scope.destination.stay.time.split(':')[0] : 0);
-        var stayMinutes = parseInt($scope.destination.stay.time ? $scope.destination.stay.time.split(':')[1] : 0);
+        var stayHours = parseInt($scope.destination.stay.hours ? $scope.destination.stay.hours : 0);
+        var stayMinutes = parseInt($scope.destination.stay.minutes ? $scope.destination.stay.minutes : 0);
 
         var departMinutes = arriveMinutes + stayMinutes;
         var departHours = (arriveHours + stayHours) + Math.floor(departMinutes/60);
@@ -223,6 +228,7 @@ $scope.fakeMin = function() { return '2014-09-05'; }
   * Utilities
   */
   $scope.addDays = function(aDate, someDays) {
+    if(typeof aDate === 'string') { aDate = aDate.split('-').join('/'); }
     var newDate = new Date(aDate.valueOf());
     newDate.setDate(newDate.getDate() + someDays);
     return newDate;
