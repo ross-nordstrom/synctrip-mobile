@@ -37,9 +37,9 @@
                <h2>{{destination.name}}</h2>
                <p>{{destination.info || destination.details.formatted_address}}</p>
             </div>
-            <div class="col-20" ng-if="destination.arrive.date && destination.depart.date">
+            <div class="col-20" ng-if="destination.stay.days || destination.stay.hours || destination.stay.minutes">
                <i class="icon ion-ios7-clock-outline"></i>
-               <p>{{ (departDateTime(destination) - arriveDateTime(destination))/1000 | durationString:'brief' }}</p>
+               <p>{{ destination.stay | durationString:'brief' }}</p>
             </div>
             <div class="col hidden-xs" ng-show="destination.arrive.time || destination.depart.time">
                <p ng-if="destination.arrive.time"><strong>&nbsp;Arrive:</strong> {{ arriveDateTime(destination) | date:'h:mm a' }}</p>

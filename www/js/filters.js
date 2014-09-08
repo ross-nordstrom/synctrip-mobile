@@ -30,11 +30,20 @@ angular.module('synctrip.filters', [])
    })
 
    .filter('durationString', function() {
-      return function(seconds, verbosity) {
-        seconds = parseInt(seconds);
-        var days = Math.floor(seconds/60/60/24);
-        var hours = Math.floor(seconds/60/60) % 24;
-        var min = Math.floor(seconds/60) % 60;
+      return function(secondsOrObject, verbosity) {
+        var days, hours, min;
+        if(typeof secondsOrObject === 'string' || typeof secondsOrObject === 'number') {
+           seconds = parseInt(secondsOrObject) || 0;
+           days = Math.floor(seconds/60/60/24);
+           hours = Math.floor(seconds/60/60) % 24;
+           min = Math.floor(seconds/60) % 60;
+        } else if(typeof secondsOrObject === 'object') {
+           days = secondsOrObject.days || 0;
+           hours = secondsOrObject.hours || 0;
+           min = secondsOrObject.minutes || 0;
+        } else {
+           return secondsOrObject;
+        }
 
         var str = '';
         if(verbosity == 'minimal') {

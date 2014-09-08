@@ -75,22 +75,22 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
      if(idx > 0 && dest.arrive && dest.arrive.date) this.propagateTimingsBack(idx - 1, dest);
      if(idx < (this.trip.destinations.length-1) && dest.depart && dest.depart.date) this.propagateTimingsForward(idx + 1, dest);
      console.log("post propagation: ", this.trip.destinations);
-     return false;
+     return true;
   }
   $scope.propagateTimingsForward = function(idx, triggeringDestination) {
      if(idx < 0 || idx >= this.trip.destinations.length || !triggeringDestination.depart || !triggeringDestination.depart.date) return true;
-     return true;
      var destination = this.trip.destinations[idx];
-     destination.arrive.date = this.addDays(triggeringDestination.depart.date, destination.duration / _S_PER_DAY);
 
      if(triggeringDestination.depart.time) {
-       var departHours = parseInt(destination.depart.time ? destination.depart.time.split(':')[0] : 0);
-       var departMinutes = parseInt(destination.depart.time ? destination.depart.time.split(':')[1] : 0);
-
-       var arriveMinutes = departMinutes + destination.duration%(60*60);
-       var arriveHours = (departHours + Math.floor(destination.duration/(60*60)) + Math.floor(arriveMinutes/60));
-       var arriveTime = [arriveHours, arriveMinutes%60].join(':');
-       destination.arrive.time = arriveTime;
+       destination.arrive = destination.arrive || {};
+       destination.arrive.disabled = true;
+       destination.arrive.type = 'propagate';
+       var prevDestDepartDateTime = new Date(triggeringDestination.depart.date + ' ' + (triggeringDestination.depart.time || ''))
+       var arriveDateTime = new Date(prevDestDepartDateTime.valueOf() 
+                                     + (destination.duration)*1000
+                                    );
+       destination.arrive.date = $filter('date')(arriveDateTime, 'yyyy-MM-dd');
+       destination.arrive.time = $filter('date')(arriveDateTime, 'HH:mm');
      }
      this.trip.destinations[idx] = this.updateTiming(destination);
      if(destination.depart && destination.depart.date) return this.propagateTimingsForward(idx + 1, destination);
