@@ -37,13 +37,13 @@
                <h2>{{destination.name}}</h2>
                <p>{{destination.info || destination.details.formatted_address}}</p>
             </div>
-            <div class="col-20" ng-show="destination.arrive.date && destination.depart.date">
+            <div class="col-20" ng-if="destination.arrive.date && destination.depart.date">
                <i class="icon ion-ios7-clock-outline"></i>
                <p>{{ (departDateTime(destination) - arriveDateTime(destination))/1000 | durationString:'brief' }}</p>
             </div>
             <div class="col hidden-xs" ng-show="destination.arrive.time || destination.depart.time">
-               <p ng-show="destination.arrive.time"><strong>&nbsp;Arrive:</strong> {{ arriveDateTime(destination) | date:'h:mm a' }}</p>
-               <p ng-show="destination.depart.time"><strong>Depart:</strong> {{ departDateTime(destination) | date:'h:mm a' }}</p>
+               <p ng-if="destination.arrive.time"><strong>&nbsp;Arrive:</strong> {{ arriveDateTime(destination) | date:'h:mm a' }}</p>
+               <p ng-if="destination.depart.time"><strong>Depart:</strong> {{ departDateTime(destination) | date:'h:mm a' }}</p>
             </div>
          </div>
       </ion-item>

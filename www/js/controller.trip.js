@@ -39,8 +39,6 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
   */
   $scope.addDestination = function(place, details) {
     var that = this;
-
-    console.log("add destination!", place, details, this.newDestination, this.newDestinationDetails);
     if(!this.newDestinationDetails || !this.newDestinationDetails.formatted_address || this.newDestinationDetails.formatted_address.length == 0) return;
 
     this.trip.destinations = this.trip.destinations || [];
@@ -61,7 +59,6 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     })
   }
   $scope.removeDestination = function(destinationIdx) {
-    console.log("REMOVE DEST: ", destinationIdx);
     if(typeof destinationIdx !== 'number' || destinationIdx < 0 || destinationIdx >= this.trip.destinations.length) return;
 
     this.trip.destinations.splice(destinationIdx, 1); // Remove 1 element from destinationIdx
@@ -76,8 +73,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
   }).then(function (modal) {
     $scope.editTripModal = modal;
     $scope.$watch('[destination.arrive,destination.stay,destination.depart]', function() {
-      console.log("WATCH TRIGGERED: ", $scope.destination);
-      $scope.updateTiming();
+      $scope.destination = $scope.updateTiming($scope.destination);
     },true)
   });
 
@@ -95,61 +91,72 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     $scope.editDestinationModal.show();
   }
   $scope.updateDestination = function() {
-    console.log("Save changes to destination ", $scope.destination);
     $scope.destination = null;
   }
-  $scope.updateTiming = function() {
-    if(!$scope.destination) return;
+  $scope.updateTiming = function(destination) {
+    if(!destination) return;
 
     var arriveSet = false;
     var staySet = false;
     var departSet = false;
 
-    if($scope.destination.arrive && !$scope.destination.arrive.disabled) {
+    if(destination.arrive && !destination.arrive.disabled) {
       // User set the arrive time, so check and possibly set one of the others
       arriveSet = true;
     }
-    if($scope.destination.stay && !$scope.destination.stay.disabled) {
+    if(destination.stay && !destination.stay.disabled) {
       // User set the stay time, so check and possibly set one of the others
       staySet = true;
     }
-    if($scope.destination.depart && !$scope.destination.depart.disabled) {
+    if(destination.depart && !destination.depart.disabled) {
       // User set the depart time, so check and possibly set one of the others
       departSet = true;
     }
 
     if(arriveSet && staySet && departSet) {
       // Contradiction! Clear depart
-      $scope.destination.depart = {};
+      destination.depart = {};
       departSet = false;
     }
     if(arriveSet && staySet) {
-      $scope.destination.depart = $scope.destination.depart || {};
-      $scope.destination.depart.disabled = true;
-      $scope.destination.depart.date = $filter('date')($scope.addDays($scope.destination.arrive.date, $scope.destination.stay.days), 'yyyy-MM-dd');
+      destination.depart = destination.depart || {};
+      destination.depart.disabled = true;
+      destination.depart.date = $filter('date')($scope.addDays(destination.arrive.date, destination.stay.days), 'yyyy-MM-dd');
 
-      if($scope.destination.arrive.time) {
-        var arriveHours = parseInt($scope.destination.arrive.time ? $scope.destination.arrive.time.split(':')[0] : 0);
-        var arriveMinutes = parseInt($scope.destination.arrive.time ? $scope.destination.arrive.time.split(':')[1] : 0);
+      if(destination.arrive.time) {
+        var arriveHours = parseInt(destination.arrive.time ? destination.arrive.time.split(':')[0] : 0);
+        var arriveMinutes = parseInt(destination.arrive.time ? destination.arrive.time.split(':')[1] : 0);
 
-        var stayHours = parseInt($scope.destination.stay.hours ? $scope.destination.stay.hours : 0);
-        var stayMinutes = parseInt($scope.destination.stay.minutes ? $scope.destination.stay.minutes : 0);
+        var stayHours = parseInt(destination.stay.hours ? destination.stay.hours : 0);
+        var stayMinutes = parseInt(destination.stay.minutes ? destination.stay.minutes : 0);
 
         var departMinutes = arriveMinutes + stayMinutes;
         var departHours = (arriveHours + stayHours) + Math.floor(departMinutes/60);
         var departTime = [departHours, departMinutes%60].join(':');
         // TODO - Rollover logic to increment depart.date if needed
-        if(departTime != $scope.destination.depart.time) {
-          $scope.destination.depart.time = departTime;
+        if(departTime != destination.depart.time) {
+          destination.depart.time = departTime;
         }
       }
     } else if(arriveSet && departSet) {
-      $scope.destination.stay.disabled = true;
-      // TODO: Force stay
+      destination.stay = destination.stay || {};
+      destination.stay.disabled = true;
+      destination.stay.days = $scope.diffDays(destination.arrive.date, destination.depart.date);
+
+      var arriveHours = parseInt(destination.arrive.time ? destination.arrive.time.split(':')[0] : 0);
+      var arriveMinutes = parseInt(destination.arrive.time ? destination.arrive.time.split(':')[1] : 0);
+
+      var departHours = parseInt(destination.depart.time ? destination.depart.time.split(':')[0] : 0);
+      var departMinutes = parseInt(destination.depart.time ? destination.depart.time.split(':')[1] : 0);
+
+      destination.stay.hours = departHours - arriveHours;
+      destination.stay.minutes = departMinutes - arriveMinutes;
+
     } else if(staySet && departSet) {
-      $scope.destination.arrive.disabled = true;
+      destination.arrive.disabled = true;
       // TODO: Force arrive
     }
+    return destination;
   }
 
   //init the modal
@@ -205,8 +212,6 @@ $scope.fakeMin = function() { return '2014-09-05'; }
     $scope.getRoute(function(response) {
       if(!!response) {
 
-        console.log("GOOGLE DIRECTIONS ++> ", response);
-
         $scope.trip.destinations[0].duration = '';
         $scope.trip.destinations[0].distance = '';
 
@@ -246,6 +251,18 @@ $scope.fakeMin = function() { return '2014-09-05'; }
     var newDate = new Date(aDate.valueOf());
     newDate.setMinutes(newDate.getMinutes() + someMinutes);
     return newDate;
+  }
+  // a and b are javascript Date objects
+  var _MS_PER_DAY = 1000 * 60 * 60 * 24;
+  $scope.diffDays = function(a, b) {
+    if(typeof a === 'string') { a = new Date(a.split('-').join('/')); }
+    if(typeof b === 'string') { b = new Date(b.split('-').join('/')); }
+    if(!a instanceof Date || !b instanceof Date) return 0;
+    // Discard the time and time-zone information.
+    var utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+    var utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+
+    return Math.floor((utc2 - utc1) / _MS_PER_DAY);
   }
 
 }]); // controller
