@@ -70,18 +70,36 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     this.trip.$save()
   }
   $scope.propagateTimings = function(idx) {
-     if(idx < 0 || idx >= this.trip.destinations.length) return false;
+     if(idx < 0 || idx >= this.trip.destinations.length) return true;
      var dest = this.trip.destinations[idx];
      if(idx > 0 && dest.arrive && dest.arrive.date) this.propagateTimingsBack(idx - 1, dest);
      if(idx < (this.trip.destinations.length-1) && dest.depart && dest.depart.date) this.propagateTimingsForward(idx + 1, dest);
      console.log("post propagation: ", this.trip.destinations);
+     var startDateTime, endDateTime;
+     angular.forEach(this.trip.destinations, function(dest) {
+        // Get first date/time
+        if(!startDateTime) {
+           if(dest.arrive && dest.arrive.date) {
+            startDateTime = new Date(dest.arrive.date + ' ' + (dest.arrive.time || ''));
+           } else if(dest.depart && dest.depart.date) {
+            startDateTime = new Date(dest.depart.date + ' ' + (dest.depart.time || ''));
+           }
+        }
+        // Get last date/time
+        if(dest.depart && dest.depart.date) {
+            endDateTime = new Date(dest.depart.date + ' ' + (dest.depart.time || ''));
+        } else if(dest.arrive && dest.arrive.date) {
+            endDateTime = new Date(dest.arrive.date + ' ' + (dest.arrive.time || ''));
+        }
+     });
+     this.trip.total_duration = (endDateTime.valueOf() - startDateTime.valueOf())/1000;
      return true;
   }
   $scope.propagateTimingsForward = function(idx, triggeringDestination) {
      if(idx < 0 || idx >= this.trip.destinations.length || !triggeringDestination.depart || !triggeringDestination.depart.date) return true;
      var destination = this.trip.destinations[idx];
 
-     if(triggeringDestination.depart.time) {
+     if(triggeringDestination.depart.time && triggeringDestination.depart.type !== 'propagate') {
        destination.arrive = destination.arrive || {};
        destination.arrive.disabled = true;
        destination.arrive.type = 'propagate';
@@ -96,8 +114,24 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
      if(destination.depart && destination.depart.date) return this.propagateTimingsForward(idx + 1, destination);
      else return true;
   }
-  $scope.propagateTimingsBack = function(idx, destination) {
-     return false;
+  $scope.propagateTimingsBack = function(idx, triggeringDestination) {
+     if(idx < 0 || idx >= this.trip.destinations.length || !triggeringDestination.arrive || !triggeringDestination.arrive.date) return true;
+     var destination = this.trip.destinations[idx];
+
+     if(triggeringDestination.arrive.time && triggeringDestination.type !== 'propagate') {
+       destination.depart = destination.depart || {};
+       destination.depart.disabled = true;
+       destination.depart.type = 'propagate';
+       var prevDestDepartDateTime = new Date(triggeringDestination.arrive.date + ' ' + (triggeringDestination.arrive.time || ''))
+       var departDateTime = new Date(prevDestDepartDateTime.valueOf() 
+                                     - (triggeringDestination.duration)*1000
+                                    );
+       destination.depart.date = $filter('date')(departDateTime, 'yyyy-MM-dd');
+       destination.depart.time = $filter('date')(departDateTime, 'HH:mm');
+     }
+     this.trip.destinations[idx] = this.updateTiming(destination);
+     if(destination.arrive && destination.arrive.date) return this.propagateTimingsBack(idx - 1, destination);
+     else return true;
   }
 
   //init the modal

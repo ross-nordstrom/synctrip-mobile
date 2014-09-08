@@ -31,7 +31,7 @@ angular.module('synctrip.filters', [])
 
    .filter('durationString', function() {
       return function(secondsOrObject, verbosity) {
-        var days, hours, min;
+        var seconds, days, hours, min;
         if(typeof secondsOrObject === 'string' || typeof secondsOrObject === 'number') {
            seconds = parseInt(secondsOrObject) || 0;
            days = Math.floor(seconds/60/60/24);
