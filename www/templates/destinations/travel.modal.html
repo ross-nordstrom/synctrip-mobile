@@ -18,11 +18,11 @@
         <div class="item item-input {{ false ? 'item-stable disabled' : '' }}" ng-hide="destinationIdx === 0">
           <label>
             <span class="input-label">Travel Time</span>
-            <input eat-click type="number" placeholder="Hours" name="durationHours" ng-model="destination.travel.hours" ng-disabled="destination.travel.disabled">
+            <input eat-click type="number" placeholder="Hours" name="durationHours" ng-model="destination.travel.hours" ng-disabled="destination.travel.type !== 'fly'">
           </label>
           <label>
             <span class="input-label">&nbsp;</span>
-            <input type="number" placeholder="Minutes" name="durationMinutes" ng-model="destination.travel.minutes" ng-disabled="destination.travel.disabled">
+            <input type="number" placeholder="Minutes" name="durationMinutes" ng-model="destination.travel.minutes" ng-disabled="destination.travel.type !== 'fly'">
           </label>
         </div>
         <label class="item item-input item-floating-label">

@@ -107,7 +107,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
        destination.arrive.type = 'propagate';
        var prevDestDepartDateTime = new Date(triggeringDestination.depart.date + ' ' + (triggeringDestination.depart.time || ''))
        var arriveDateTime = new Date(prevDestDepartDateTime.valueOf() 
-                                     + (destination.duration)*1000
+                                     + ( (destination.travel.hours || 0)*60 + (destination.travel.minutes || 0))*60*1000
                                     );
        destination.arrive.date = $filter('date')(arriveDateTime, 'yyyy-MM-dd');
        destination.arrive.time = $filter('date')(arriveDateTime, 'HH:mm');
@@ -126,7 +126,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
        destination.depart.type = 'propagate';
        var prevDestDepartDateTime = new Date(triggeringDestination.arrive.date + ' ' + (triggeringDestination.arrive.time || ''))
        var departDateTime = new Date(prevDestDepartDateTime.valueOf() 
-                                     - (triggeringDestination.duration)*1000
+                                     - ( (triggeringDestination.travel.hours || 0)*60 + (triggeringDestination.travel.minutes || 0))*60*1000
                                     );
        destination.depart.date = $filter('date')(departDateTime, 'yyyy-MM-dd');
        destination.depart.time = $filter('date')(departDateTime, 'HH:mm');
@@ -193,6 +193,18 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
       destination.depart = {};
       departSet = false;
     }
+    
+    // Clear auto-set values
+    function xor(a,b) { return a ? !b : b; }
+    if( xor(arriveSet, staySet) && destination.depart.type === 'auto') {
+       destination.depart = {};
+    } else if( xor(arriveSet, departSet) && destination.stay.type === 'auto') {
+       destination.stay = {};
+    } else if( xor(departSet, staySet) && destination.arrive.type === 'auto') {
+       destination.arrive = {};
+    }
+
+    // Auto-set values
     if(arriveSet && staySet) {
       destination.depart = destination.depart || {};
       destination.depart.disabled = true;
@@ -205,9 +217,10 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
                                    );
       destination.depart.date = $filter('date')(departDateTime, 'yyyy-MM-dd');
       destination.depart.time = $filter('date')(departDateTime, 'HH:mm');
-    } else if(arriveSet && departSet) {
+    } else if(arriveSet && departSet && destination.arrive.time && destination.depart.time) {
       destination.stay = destination.stay || {};
       destination.stay.disabled = true;
+      destination.stay.type = 'auto';
       destination.stay.days = $scope.diffDays(destination.arrive.date, destination.depart.date);
 
       var arriveHours = parseInt(destination.arrive.time ? destination.arrive.time.split(':')[0] : 0);
@@ -218,6 +231,14 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
 
       destination.stay.hours = departHours - arriveHours;
       destination.stay.minutes = departMinutes - arriveMinutes;
+      if(destination.stay.minutes < 0) {
+         destination.stay.hours--;
+         destination.stay.minutes += 60;
+      }
+      if(destination.stay.hours < 0) {
+         destination.stay.days--;
+         destination.stay.hours += 24;
+      }
 
     } else if(staySet && departSet) {
       if(!destination.arrive) destination.arrive = {};
@@ -300,7 +321,7 @@ $scope.fakeMin = function() { return '2014-09-05'; }
     $scope.getRoute(function(response) {
       if(!!response) {
 
-        $scope.trip.destinations[0].duration = '';
+        $scope.trip.destinations[0].travel = {};
         $scope.trip.destinations[0].distance = '';
 
         $scope.trip.total_travel_time = 0;

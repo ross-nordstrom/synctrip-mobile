@@ -21,7 +21,7 @@
         <div class="item item-input {{destination.arrive.disabled ? 'item-stable disabled' : '' }}" ng-hide="destinationIdx === 0">
           <label>
             <span class="input-label">Arrive Date</span>
-            <input type="date" placeholder="Arrive Date" name="arriveDate" ng-model="destination.arrive.date" ng-disabled="destination.arrive.disabled" min="{{fakeMin()}}">
+            <input type="date" placeholder="Arrive Date" name="arriveDate" max="{{destination.depart.date}}" ng-model="destination.arrive.date" ng-disabled="destination.arrive.disabled" min="{{fakeMin()}}">
           </label>
          <label ng-hide="destinationIdx === 0 || !destination.arrive.date">
             <span class="input-label">Arrive Time</span>
@@ -55,7 +55,7 @@
         <div class="item item-input {{destination.depart.disabled ? 'item-stable disabled' : '' }}" ng-hide="" >
           <label>
             <span class="input-label">Depart Date</span>
-            <input type="date" placeholder="Depart" ng-model="destination.depart.date" ng-disabled="destination.depart.disabled">
+            <input type="date" placeholder="Depart" ng-model="destination.depart.date" min="{{destination.arrive.date}}" ng-disabled="destination.depart.disabled">
           </label>
           <label ng-hide="!destination.depart.date">
             <span class="input-label">Depart Time</span>
