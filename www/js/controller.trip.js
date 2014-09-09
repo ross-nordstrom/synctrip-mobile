@@ -1,4 +1,4 @@
-angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synctrip.service.trips'])
+angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synctrip.service.trips', 'ionic'])
 .controller('TripCtrl', ['$scope','$rootScope','$stateParams','$ionicModal','Trips', 'Gmap', 'currentUser', '$filter',
   function($scope, $rootScope, $stateParams, $ionicModal, Trips, Gmap, currentUser, $filter) {
   var destinationDetailsWhitelist = ['address_components', 'formatted_address', 'geometry', 'icon', 'place_id', 'url', 'vicinity'];
@@ -33,10 +33,12 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
 
   $scope.doRefresh = function() {
     $scope.trip = Trips.find($stateParams.id);
-    $scope.trip.$loaded().then(function() {
-      $scope.calculateRoute();
-      $scope.$broadcast('scroll.refreshComplete');
-    });
+    setTimeout(function() {
+       $scope.trip.$loaded().then(function() {
+         $scope.calculateRoute();
+         $scope.$broadcast('scroll.refreshComplete');
+       });
+    }, 1000);
   }
 
  /****************************************************************************
@@ -134,7 +136,6 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
      else return true;
   }
 
-  //init the modal
   $ionicModal.fromTemplateUrl('templates/trips/edit.modal.html', {
     scope: $scope,
     animation: 'slide-in-up',
@@ -154,6 +155,11 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
  /****************************************************************************
   * Destination management
   */
+  $scope.selectTravel = function(destinationIdx) {
+    $scope.destinationIdx = destinationIdx;
+    $scope.destination = $scope.trip.destinations[destinationIdx];
+    $scope.selectTravelModal.show();
+  }
   $scope.editDestination = function(destinationIdx) {
     $scope.destinationIdx = destinationIdx;
     $scope.destination = $scope.trip.destinations[destinationIdx];
@@ -229,6 +235,18 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     return destination;
   }
 
+  // init the popover
+  $ionicModal.fromTemplateUrl('templates/destinations/travel.modal.html', {
+    scope: $scope,
+  }).then(function(modal) {
+console.log("initialize travel-select modal");
+    $scope.selectTravelModal = modal;
+  });
+  //Cleanup the popover when we're done with it!
+  $scope.$on('$destroy', function() {
+    $scope.selectTravelModal.remove();
+  });
+
   //init the modal
   $ionicModal.fromTemplateUrl('templates/destinations/edit.modal.html', {
     scope: $scope,
@@ -288,8 +306,12 @@ $scope.fakeMin = function() { return '2014-09-05'; }
         $scope.trip.total_travel_time = 0;
         $scope.trip.total_distance = 0;
         for(var i=1; i < $scope.trip.destinations.length; i++) {
-          $scope.trip.destinations[i].duration = response.routes[0].legs[i-1].duration.value;
-          $scope.trip.destinations[i].distance = response.routes[0].legs[i-1].distance.value;
+          if(typeof $scope.trip.destinations[i].travel !== 'object' || !$scope.trip.destinations[i].travel) { $scope.trip.destinations[i].travel = {}; }
+          var duration = response.routes[0].legs[i-1].duration.value;
+          $scope.trip.destinations[i].travel.hours = Math.floor(duration/60/60)
+          $scope.trip.destinations[i].travel.minutes = Math.floor(duration/60) % 60;
+          $scope.trip.destinations[i].travel.distance = $filter('metersToMiles')(response.routes[0].legs[i-1].distance.value);
+          $scope.trip.destinations[i].travel.type = 'drive';
 
           $scope.trip.total_travel_time += response.routes[0].legs[i-1].duration.value;
           $scope.trip.total_distance += response.routes[0].legs[i-1].distance.value;

@@ -15,14 +15,18 @@
    </div>
    <ion-list class="list-no-borders">
       <ion-item ng-repeat="(idx,destination) in trip.destinations" ng-click="editDestination(idx)">
-         <div eat-click class="row row-dense" ng-show="destination.distance || destination.duration">
-            <div class="col col-offset-10" ng-show="destination.distance || destination.duration">
-               <div class="item item-icon-left">
-                  <i class="icon ion-model-s"></i>
+         <div eat-click class="row row-dense" ng-show="destination.travel.distance || destination.travel.hours || destination.travel.minutes">
+            <div class="col col-offset-10" ng-show="destination.travel.distance || destination.travel.hours || destination.travel.minutes">
+               <div class="item item-icon-left" ng-show="destination.travel.type === 'none'">
+                  <i class="icon ion-minus" ng-click="selectTravel(idx)"></i>
+                  <p>[N/A]</p>
+               </div>
+               <div class="item item-icon-left" ng-hide="destination.travel.type === 'none'">
+                  <i class="icon {{ destination.travel.type === 'fly' ? 'ion-plane' : 'ion-model-s' }}" ng-click="selectTravel(idx)"></i>
                   <p>
-                     <span ng-show="destination.distance">
-                        {{destination.distance | distanceString}}</span><span ng-show="destination.duration && destination.distance">, </span>
-                     <span ng-show="destination.duration">{{destination.duration | durationString:'minimal'}}</span>
+                     <span ng-show="destination.travel.distance">
+                        {{destination.travel.distance }} mi</span><span ng-show="(destination.travel.hours || destination.travel.minutes) && destination.travel.distance">, </span>
+                     <span ng-show="destination.travel.hours || destination.travel.minutes">{{destination.travel | durationString:'minimal'}}</span>
                   </p>
                </div>
             </div>

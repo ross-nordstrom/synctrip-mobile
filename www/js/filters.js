@@ -70,6 +70,16 @@ angular.module('synctrip.filters', [])
       };
    })
 
+   .filter('metersToMiles', function() {
+      var METERS_TO_MILES = 0.000621371192;
+      return function(meters) {
+         meters = parseFloat(meters);
+        var accuracy = meters > 30 ? 1 : 10;
+        var miles = (Math.round( meters * METERS_TO_MILES * accuracy ) / accuracy);
+        return miles;
+      }
+   })
+
    .filter('distanceString', function() {
       var METERS_TO_MILES = 0.000621371192;
       return function(meters) {

@@ -1,0 +1,44 @@
+<div class="modal">
+  <div class="bar bar-header bar-energized">
+    <h1 class="title">Travel Mode</h1>
+    <button class="button button-clear" ng-click="selectTravelModal.hide()"><i class="icon ion-close"></i></button>
+  </div>
+  <ion-content class="padding">
+  <br><br>
+  <form name="selectTravelForm" ng-submit="trip.$save() && selectTravelModal.hide()">
+    <div class="list">
+      <div class="list">
+         <ion-radio ng-model="destination.travel.type" value="drive"><i class="icon ion-model-s"></i>&nbsp;&nbsp;&nbsp;Drive</ion-radio>
+         <ion-radio ng-model="destination.travel.type" value="fly"><i class="icon ion-plane"></i>&nbsp;&nbsp;&nbsp;Fly</ion-radio>
+         <ion-radio ng-model="destination.travel.type" value="none"><i class="icon ion-minus"></i>&nbsp;&nbsp;&nbsp;[None]</ion-radio>
+        <label class="item item-input item-floating-label {{ false ? 'item-stable disabled' : '' }}">
+          <span>Distance</span>
+          <input type="number" placeholder="Distance" name="travelDistance" ng-model="destination.travel.distance" ng-disabled="true">
+        </label>
+        <div class="item item-input {{ false ? 'item-stable disabled' : '' }}" ng-hide="destinationIdx === 0">
+          <label>
+            <span class="input-label">Travel Time</span>
+            <input eat-click type="number" placeholder="Hours" name="durationHours" ng-model="destination.travel.hours" ng-disabled="destination.travel.disabled">
+          </label>
+          <label>
+            <span class="input-label">&nbsp;</span>
+            <input type="number" placeholder="Minutes" name="durationMinutes" ng-model="destination.travel.minutes" ng-disabled="destination.travel.disabled">
+          </label>
+        </div>
+        <label class="item item-input item-floating-label">
+          <span class="input-label">Notes</span>
+          <textarea placeholder="Notes" ng-model="destination.travel.notes"></textarea>
+        </label>
+      </div>
+      <div class="list list-inset">
+      <button class="button button-block button-stable" type="submit">
+        Save Details
+      </button>
+      <button class="button button-block button-assertive" ng-click="removeDestination(destinationIdx)">
+        Delete
+      </button>
+      </div>
+    </div>
+  </form>
+  </ion-content>
+</div>
