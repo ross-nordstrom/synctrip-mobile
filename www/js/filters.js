@@ -63,8 +63,10 @@ angular.module('synctrip.filters', [])
            if(hours == 1) { str += hours+" hour "; }
            else if(hours > 1) { str += hours + " hours ";}
 
-           if(min == 1) { str += min+" min"; }
-           else if(min > 1) { str += min + " mins";}
+           if(!days) {
+             if(min == 1) { str += min+" min"; }
+             else if(min > 1) { str += min + " mins";}
+           }
         }
         return str;
       };
