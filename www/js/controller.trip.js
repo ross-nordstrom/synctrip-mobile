@@ -94,7 +94,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
             endDateTime = new Date(dest.arrive.date + ' ' + (dest.arrive.time || ''));
         }
      });
-     this.trip.total_duration = (endDateTime.valueOf() - startDateTime.valueOf())/1000;
+     this.trip.total_duration = !(endDateTime && startDateTime) ? null : (endDateTime.valueOf() - startDateTime.valueOf())/1000;
      return true;
   }
   $scope.propagateTimingsForward = function(idx, triggeringDestination) {
