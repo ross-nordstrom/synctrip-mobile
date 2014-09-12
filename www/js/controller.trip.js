@@ -196,11 +196,11 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     
     // Clear auto-set values
     function xor(a,b) { return a ? !b : b; }
-    if( xor(arriveSet, staySet) && destination.depart.type === 'auto') {
+    if( xor(arriveSet, staySet) && typeof destination.depart === 'object' && destination.depart.type === 'auto') {
        destination.depart = {};
-    } else if( xor(arriveSet, departSet) && destination.stay.type === 'auto') {
+    } else if( xor(arriveSet, departSet) && typeof destination.stay === 'object' && destination.stay.type === 'auto') {
        destination.stay = {};
-    } else if( xor(departSet, staySet) && destination.arrive.type === 'auto') {
+    } else if( xor(departSet, staySet) && typeof destination.arrive === 'object' && destination.arrive.type === 'auto') {
        destination.arrive = {};
     }
 
