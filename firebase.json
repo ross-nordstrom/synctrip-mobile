@@ -1,0 +1,9 @@
+{
+  "firebase": "synctrip",
+  "public": "www",
+  "ignore": [
+    "firebase.json",
+    "**/.*",
+    "**/node_modules/**"
+  ]
+}
