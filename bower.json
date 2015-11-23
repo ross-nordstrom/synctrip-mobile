@@ -6,7 +6,7 @@
     "ionicons": "driftyco/ionicons#1.5.2",
     "angularfire": "*",
     "firebase-util": "git@github.com:firebase/firebase-util.git",
-    "angular-google-maps": "*",
+    "angular-google-maps": "1.2.1",
     "ngAutocomplete": "git@github.com:wpalahnuk/ngAutocomplete"
   }
 }

@@ -13,8 +13,8 @@
       </a>
       </div>
    </div>
-   <ion-list class="list-no-borders">
-      <ion-item ng-repeat="(idx,destination) in trip.destinations" ng-click="editDestination(idx)">
+   <ion-list class="list-no-borders" can-swipe="true">
+      <ion-item ng-repeat="(idx,destination) in trip.destinations">
          <div eat-click class="row row-dense" ng-show="destination.travel.distance || destination.travel.hours || destination.travel.minutes">
             <div class="col col-offset-10" ng-show="destination.travel.distance || destination.travel.hours || destination.travel.minutes">
                <div class="item item-icon-left" ng-show="destination.travel.type === 'none'">
@@ -31,7 +31,19 @@
                </div>
             </div>
          </div>
-         <div class="row">
+         <div class="row" ng-show="(idx === modifyingIdx)">
+            <form ng-submit="addDestination(newDestination, newDestinationDetails, idx)" style="width:100%;">
+               <div class="item item-input padding">
+                  <!-- <label class="item-input-wrapper"> -->
+                  <input type="text" ng-autocomplete ng-model="newDestination" options="autocompleteOptions" details="newDestinationDetails" placeholder="Change location"/>
+                  <!-- </label> -->
+                  <button class="button button-balanced" ng-show="!!newDestination && !!newDestinationDetails">
+                     <i class="icon ion-plus"></i>
+                  </button>
+               </div>
+            </form>
+         </div>
+         <div class="row" ng-hide="(idx === modifyingIdx)"  ng-click="editDestination(idx)">
             <div class="col col-10 calendar-stack" ng-show="destination.arrive.date || destination.depart.date">
                <i class="icon ion-calendar"></i>
                <h4 ng-show="destination.arrive.date">{{ destination.arrive.date | date:'dd' }}</h4>
@@ -50,6 +62,8 @@
                <p ng-if="destination.depart.time"><strong>Depart:</strong> {{ departDateTime(destination) | date:'h:mm a' }}</p>
             </div>
          </div>
+         <ion-option-button class="button-positive" ng-click="modifyDestination(idx)">Change</ion-option-button>
+         <ion-option-button class="button-assertive" ng-click="removeDestination(idx)">Delete</ion-option-button>
       </ion-item>
    </ion-list>
    <form ng-submit="addDestination($scope.newDestination, $scope.newDestinationDetails)">

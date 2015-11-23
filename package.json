@@ -2,6 +2,10 @@
   "name": "ionic-project",
   "version": "1.0.0",
   "description": "An Ionic project",
+  "bugs": {"url": "https://waffle.io/ross-nordstrom/synctrip-mobile"},
+  "directoris": {
+     "lib": "www"
+  },
   "dependencies": {
     "gulp": "^3.5.6",
     "gulp-sass": "^0.7.1",

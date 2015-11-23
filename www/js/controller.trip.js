@@ -1,6 +1,6 @@
 angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synctrip.service.trips', 'ionic'])
-.controller('TripCtrl', ['$scope','$rootScope','$stateParams','$ionicModal','Trips', 'Gmap', 'currentUser', '$filter',
-  function($scope, $rootScope, $stateParams, $ionicModal, Trips, Gmap, currentUser, $filter) {
+.controller('TripCtrl', ['$scope','$rootScope','$stateParams','$ionicModal','$ionicListDelegate','Trips', 'Gmap', 'currentUser', '$filter',
+  function($scope, $rootScope, $stateParams, $ionicModal, $ionicListDelegate, Trips, Gmap, currentUser, $filter) {
   var destinationDetailsWhitelist = ['address_components', 'formatted_address', 'geometry', 'icon', 'place_id', 'url', 'vicinity'];
   var _MS_PER_MINUTE = 1000 * 60;
   var _MS_PER_HOUR = 1000 * 60 * 60;
@@ -44,7 +44,39 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
  /****************************************************************************
   * Trip management
   */
-  $scope.addDestination = function(place, details) {
+ $scope.modifyDestination = function(idx) {
+    $scope.modifyingIdx = idx;
+    $ionicListDelegate.closeOptionButtons();
+ }
+  $scope.saveTravelMode = function() {
+    if($scope.destination.travel.type === 'none') {
+      // Split?
+        if( !($scope.legIdx === 0 && $scope.destinationIdx === 0) && $scope.destinationIdx !== 0) {
+        // Split!
+        console.log("PRE SPLIT: ", $scope.trip.destinations.length, $scope.trip.destinations.map(function(x){ return x.length; }).join(',') );
+        var newLeg = $scope.trip.destinations[$scope.legIdx].slice($scope.destinationIdx);
+        $scope.trip.destinations[$scope.legIdx] = $scope.trip.destinations[$scope.legIdx].slice(0,$scope.destinationIdx);
+        // Insert new leg
+        $scope.trip.destinations.splice($scope.legIdx+1, 0, newLeg);
+        console.log("POST SPLIT: ", $scope.trip.destinations.length, $scope.trip.destinations.map(function(x){ return x.length; }).join(',') );
+      }
+    } else {
+      // Merge?
+      if( $scope.legIdx > 0 && $scope.destinationIdx === 0) {
+        // Merge!
+        console.log("PRE MERGE: ", $scope.trip.destinations.length, $scope.trip.destinations.map(function(x){ return x.length; }).join(',') );
+        $scope.trip.destinations[$scope.legIdx-1] = $scope.trip.destinations[$scope.legIdx-1].concat($scope.trip.destinations[$scope.legIdx]);
+        // Remove old leg
+        var removed = $scope.trip.destinations.splice($scope.legIdx, 1);
+        console.log("REMOVED: ", removed)
+        console.log("POST MERGE: ", $scope.trip.destinations.length, $scope.trip.destinations.map(function(x){ return x.length; }).join(',') );
+      }
+    }
+    $scope.propagateTimings($scope.legIdx, $scope.destinationIdx);
+    return $scope.trip.$save();
+  };
+
+  $scope.addDestination = function(place, details, idx) {
     var that = this;
     if(!this.newDestinationDetails || !this.newDestinationDetails.formatted_address || this.newDestinationDetails.formatted_address.length == 0) return;
 
@@ -58,8 +90,21 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
         details[key] = newDestinationDetails[key];
       }
     });
-    this.trip.destinations.push({ name: newDestinationDetails.name, details: details});
+
+    // RDN 22-NOV-2015. These are now getters, maybe they were just properties back in the day
+    details.geometry.location = {
+      lat: details.geometry.location.lat(),
+      lng: details.geometry.location.lng(),
+    }
+
+    var newDestinationInfo = { name: newDestinationDetails.name, details: details };
+    if(!idx || !this.trip.destinations[idx]) {
+      this.trip.destinations.push(newDestinationInfo);
+    } else {
+      this.trip.destinations[idx] = newDestinationInfo;
+    }
     this.trip.$save().then(function(){
+      $scope.modifyingIdx = null;
       that.newDestinationDetails = null;
       that.newDestination = '';
       that.calculateRoute();
@@ -69,7 +114,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     if(typeof destinationIdx !== 'number' || destinationIdx < 0 || destinationIdx >= this.trip.destinations.length) return;
 
     this.trip.destinations.splice(destinationIdx, 1); // Remove 1 element from destinationIdx
-    this.trip.$save()
+    this.trip.$save().then($scope.calculateRoute);
   }
   $scope.propagateTimings = function(idx) {
      if(idx < 0 || idx >= this.trip.destinations.length) return true;
@@ -106,7 +151,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
        destination.arrive.disabled = true;
        destination.arrive.type = 'propagate';
        var prevDestDepartDateTime = new Date(triggeringDestination.depart.date + ' ' + (triggeringDestination.depart.time || ''))
-       var arriveDateTime = new Date(prevDestDepartDateTime.valueOf() 
+       var arriveDateTime = new Date(prevDestDepartDateTime.valueOf()
                                      + ( (destination.travel.hours || 0)*60 + (destination.travel.minutes || 0))*60*1000
                                     );
        destination.arrive.date = $filter('date')(arriveDateTime, 'yyyy-MM-dd');
@@ -125,7 +170,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
        destination.depart.disabled = true;
        destination.depart.type = 'propagate';
        var prevDestDepartDateTime = new Date(triggeringDestination.arrive.date + ' ' + (triggeringDestination.arrive.time || ''))
-       var departDateTime = new Date(prevDestDepartDateTime.valueOf() 
+       var departDateTime = new Date(prevDestDepartDateTime.valueOf()
                                      - ( (triggeringDestination.travel.hours || 0)*60 + (triggeringDestination.travel.minutes || 0))*60*1000
                                     );
        destination.depart.date = $filter('date')(departDateTime, 'yyyy-MM-dd');
@@ -193,7 +238,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
       destination.depart = {};
       departSet = false;
     }
-    
+
     // Clear auto-set values
     function xor(a,b) { return a ? !b : b; }
     if( xor(arriveSet, staySet) && typeof destination.depart === 'object' && destination.depart.type === 'auto') {
@@ -210,7 +255,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
       destination.depart.disabled = true;
       destination.depart.type = 'auto';
       var arriveDateTime = new Date(destination.arrive.date + ' ' + (destination.arrive.time || ''))
-      var departDateTime = new Date(arriveDateTime.valueOf() 
+      var departDateTime = new Date(arriveDateTime.valueOf()
                                     + (destination.stay.days || 0)*_MS_PER_DAY
                                     + (destination.stay.hours || 0)*_MS_PER_HOUR
                                     + (destination.stay.minutes || 0)*_MS_PER_MINUTE
@@ -245,7 +290,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
       destination.arrive.disabled = true;
       destination.arrive.type = 'auto';
       var departDateTime = new Date(destination.depart.date + ' ' + (destination.depart.time || ''))
-      var arriveDateTime = new Date(departDateTime.valueOf() 
+      var arriveDateTime = new Date(departDateTime.valueOf()
                                     - (destination.stay.days || 0)*_MS_PER_DAY
                                     - (destination.stay.hours || 0)*_MS_PER_HOUR
                                     - (destination.stay.minutes || 0)*_MS_PER_MINUTE
