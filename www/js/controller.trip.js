@@ -386,10 +386,9 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
  /****************************************************************************
   * Navigation management
   */
-  $scope.getRoute = function(callback) {
+  $scope.getRoute = function(destinations, callback) {
     var count = 0;
-    if($scope.trip.destinations && (count = $scope.trip.destinations.length) > 1) {
-      var destinations = $scope.trip.destinations;
+    if(destinations && (count = destinations.length) > 1) {
       var origin = destinations[0].details.formatted_address;
       var destination = destinations[count-1].details.formatted_address;
       var waypoints = destinations.slice(1, count - 1).map(function(destination) {
@@ -400,7 +399,31 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
   }
 
   $scope.calculateRoute = function() {
-    $scope.getRoute(function(response) {
+    // First split into independent, contiguous driving portions
+    var info = $scope.trip.destinations.reduce(function(acc, dst) {
+
+      // End of prev portion. Beginning of next
+      if(!dst.travel || dst.travel.type !== 'drive') {
+        if(acc.thisPortion.length > 1) {
+          acc.portions.push(acc.thisPortion);
+          acc.thisPortion = [dst];
+        }
+        return acc;
+      }
+
+      // Continues from previous
+      acc.thisPortion.push(dst);
+      return acc;
+    }, {thisPortion:[], portions: []});
+
+    if(info.thisPortion.length > 1) {
+      info.portions.push(info.thisPortion);
+    }
+    var portions = $scope.trip.destinations;
+    // var portions = info.portions;
+
+    // TODO: Make N of these calls for N legs of contiguous driving destinations
+    $scope.getRoute(portions, function(response) {
       if(!!response) {
 
         $scope.trip.destinations[0].travel = null;
