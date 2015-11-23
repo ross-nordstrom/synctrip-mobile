@@ -18,8 +18,8 @@
          <div eat-click class="row row-dense" ng-show="destination.travel">
             <div class="col col-offset-10">
                <div class="item item-icon-left" ng-show="destination.travel.type === 'none'">
-                  <i class="icon ion-minus" ng-click="selectTravel(idx)"></i>
-                  <p>[N/A]</p>
+                  <i class="icon ion-ios7-more-outline" ng-click="selectTravel(idx)"></i>
+                  <p></p>
                </div>
                <div class="item item-icon-left" ng-hide="destination.travel.type === 'none'">
                   <i class="icon {{ destination.travel.type === 'fly' ? 'ion-plane' : 'ion-model-s' }}" ng-click="selectTravel(idx)"></i>

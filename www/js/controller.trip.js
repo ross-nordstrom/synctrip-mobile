@@ -88,16 +88,23 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     this.newDestinationDetails = null;
   }
   $scope.saveTravelMode = function() {
-    var idx = $scope.destinationIdx;
+    var idx = this.destinationIdx;
     var prev = $scope.trip.destinations[idx-1];
     var cur = $scope.trip.destinations[idx];
+
+    if(cur.travel.type === 'none') {
+      cur.travel.duration = 0;
+      cur.travel.distance = null;
+      cur.travel.hours = null;
+      cur.travel.minutes = null;
+    }
 
     // First try to propogate forward from previous destination
     this.propagateTimingsForward(idx, prev);
     // Then try to go the other way
     this.propagateTimingsBack(idx-1, cur);
 
-    return $scope.trip.$save();
+    return this.calculateRoute();
   };
 
   $scope.addDestination = function(place, details, idx) {
