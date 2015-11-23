@@ -11,6 +11,9 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
   $scope.trip = Trips.find($stateParams.id);
   $scope.editTripModal = null;
   $scope.editDestinationModal = null;
+  $scope.newDestination=null;
+  $scope.newDestinationDetails=null;
+  $scope.reordering = false;
   $scope.map = {
     center: {
         latitude: 45,
@@ -21,9 +24,6 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
   $scope.autocompleteOptions = {
     type: "(cities)"
   }
-
-  $scope.newDestination;
-  $scope.newDestinationDetails;
 
   $scope.overviewItems = [
     { title: 'Distance', icon: 'ion-model-s', key: 'total_distance', type: 'distance' },
@@ -44,9 +44,23 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
  /****************************************************************************
   * Trip management
   */
+ $scope.reorderDestinations = function(dst, fromIdx, toIdx){
+    this.trip.destinations.splice(toIdx, 0, this.trip.destinations.splice(fromIdx, 1)[0]);
+    this.trip.$save().then(function() {
+      $scope.calculateRoute()
+    });
+ }
  $scope.modifyDestination = function(idx) {
     $scope.modifyingIdx = idx;
     $ionicListDelegate.closeOptionButtons();
+ }
+ $scope.toggleReordering = function() {
+  $scope.reordering = !$scope.reordering;
+ }
+ $scope.clearDestination = function() {
+  this.reordering = false;
+  this.newDestination = null;
+  this.newDestinationDetails = null;
  }
   $scope.saveTravelMode = function() {
     if($scope.destination.travel.type === 'none') {
@@ -77,6 +91,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
   };
 
   $scope.addDestination = function(place, details, idx) {
+  $scope.reordering = false;
     var that = this;
     if(!this.newDestinationDetails || !this.newDestinationDetails.formatted_address || this.newDestinationDetails.formatted_address.length == 0) return;
 
@@ -114,7 +129,9 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     if(typeof destinationIdx !== 'number' || destinationIdx < 0 || destinationIdx >= this.trip.destinations.length) return;
 
     this.trip.destinations.splice(destinationIdx, 1); // Remove 1 element from destinationIdx
-    this.trip.$save().then($scope.calculateRoute);
+    this.trip.$save().then(function() {
+      $scope.calculateRoute()
+    });
   }
   $scope.propagateTimings = function(idx) {
      if(idx < 0 || idx >= this.trip.destinations.length) return true;

@@ -13,7 +13,7 @@
       </a>
       </div>
    </div>
-   <ion-list class="list-no-borders" can-swipe="true">
+   <ion-list class="list-no-borders" can-swipe="true" show-reorder="reordering && !newDestination">
       <ion-item ng-repeat="(idx,destination) in trip.destinations">
          <div eat-click class="row row-dense" ng-show="destination.travel.distance || destination.travel.hours || destination.travel.minutes">
             <div class="col col-offset-10" ng-show="destination.travel.distance || destination.travel.hours || destination.travel.minutes">
@@ -62,8 +62,10 @@
                <p ng-if="destination.depart.time"><strong>Depart:</strong> {{ departDateTime(destination) | date:'h:mm a' }}</p>
             </div>
          </div>
-         <ion-option-button class="button-positive" ng-click="modifyDestination(idx)">Change</ion-option-button>
+         <ion-option-button class="button-balanced" ng-click="modifyDestination(idx)">Change</ion-option-button>
          <ion-option-button class="button-assertive" ng-click="removeDestination(idx)">Delete</ion-option-button>
+          <ion-reorder-button class="ion-navicon" on-reorder="reorderDestinations(destination, $fromIndex, $toIndex)">
+          </ion-reorder-button>
       </ion-item>
    </ion-list>
    <form ng-submit="addDestination($scope.newDestination, $scope.newDestinationDetails)">
@@ -74,6 +76,8 @@
          <button class="button button-balanced" ng-show="!!newDestination && !!newDestinationDetails">
             <i class="icon ion-plus"></i>
          </button>
+         <button eat-click type="button" class="button button-neutral" ng-show="!!newDestination && !!newDestinationDetails" ng-click="clearDestination(); false">Clear</button>
+         <button eat-click type="button" class="button button-neutral" ng-hide="!!newDestination && !!newDestinationDetails" ng-click="toggleReordering(); false">Reorder</button>
       </div>
    </form>
    <br><br>
