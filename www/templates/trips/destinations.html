@@ -44,10 +44,11 @@
             </form>
          </div>
          <div class="row" ng-hide="(idx === modifyingIdx)"  ng-click="editDestination(idx)">
-            <div class="col col-10 calendar-stack" ng-show="destination.arrive.date || destination.depart.date">
+            <div class="col col-10 calendar-stack" ng-show="hasOldDate(idx)"></div>
+            <div class="col col-10 calendar-stack" ng-show="hasNewDate(idx)">
                <i class="icon ion-calendar"></i>
                <h4 ng-show="destination.arrive.date">{{ destination.arrive.date | date:'dd' }}</h4>
-               <h4 ng-hide="destination.arrive.date">{{ destination.depart.date | date:'dd' }}</h4>
+               <h4 ng-show="!destination.arrive.date && destination.depart.date">{{ destination.depart.date | date:'dd' }}</h4>
             </div>
             <div class="col col-50">
                <h2>{{destination.name}}</h2>

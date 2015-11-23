@@ -41,6 +41,31 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     }, 1000);
   }
 
+  $scope.hasNewDate = function(idx) {
+    var prev = this.trip.destinations[idx-1];
+    var cur = this.trip.destinations[idx];
+
+    if(!hasDate(cur)) return false;
+    if(!hasDate(prev)) return true;
+
+    return (prev.depart.date !== cur.arrive.date);
+  }
+  $scope.hasOldDate = function(idx) {
+    var prev = this.trip.destinations[idx-1];
+    var cur = this.trip.destinations[idx];
+
+    if(!hasDate(cur)) return false;
+    if(!hasDate(prev)) return false;
+
+    return (prev.depart.date === cur.arrive.date);
+  }
+
+  function hasDate(dst) {
+    if(!dst) return false;
+    return ((dst.arrive && dst.arrive.date)
+      || (dst.depart && dst.depart.date));
+  }
+
  /****************************************************************************
   * Trip management
   */
