@@ -5,7 +5,7 @@
   </div>
   <ion-content class="padding">
   <br><br>
-  <form name="selectTravelForm" ng-submit="trip.$save() && selectTravelModal.hide()">
+  <form name="selectTravelForm" ng-submit="saveTravelMode() && selectTravelModal.hide()">
     <div class="list">
       <div class="list">
          <ion-radio ng-model="destination.travel.type" value="drive"><i class="icon ion-model-s"></i>&nbsp;&nbsp;&nbsp;Drive</ion-radio>

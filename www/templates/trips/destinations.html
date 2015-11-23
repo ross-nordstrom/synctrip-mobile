@@ -15,8 +15,8 @@
    </div>
    <ion-list class="list-no-borders" can-swipe="true" show-reorder="reordering && !newDestination">
       <ion-item ng-repeat="(idx,destination) in trip.destinations">
-         <div eat-click class="row row-dense" ng-show="destination.travel.distance || destination.travel.hours || destination.travel.minutes">
-            <div class="col col-offset-10" ng-show="destination.travel.distance || destination.travel.hours || destination.travel.minutes">
+         <div eat-click class="row row-dense" ng-show="destination.travel">
+            <div class="col col-offset-10">
                <div class="item item-icon-left" ng-show="destination.travel.type === 'none'">
                   <i class="icon ion-minus" ng-click="selectTravel(idx)"></i>
                   <p>[N/A]</p>
@@ -54,13 +54,13 @@
                <h2>{{destination.name}}</h2>
                <p>{{destination.info || destination.details.formatted_address}}</p>
             </div>
-            <div class="col-20" ng-if="destination.stay.days || destination.stay.hours || destination.stay.minutes">
-               <i class="icon ion-ios7-clock-outline"></i>
-               <p>{{ destination.stay | durationString:'brief' }}</p>
-            </div>
-            <div class="col hidden-xs" ng-show="destination.arrive.time || destination.depart.time">
+            <div class="col-25" ng-show="destination.arrive.time || destination.depart.time">
                <p ng-if="destination.arrive.time"><strong>&nbsp;Arrive:</strong> {{ arriveDateTime(destination) | date:'h:mm a' }}</p>
                <p ng-if="destination.depart.time"><strong>Depart:</strong> {{ departDateTime(destination) | date:'h:mm a' }}</p>
+            </div>
+            <div class="col hidden-xs" ng-if="destination.stay.days || destination.stay.hours || destination.stay.minutes">
+               <i class="icon ion-ios7-clock-outline"></i>
+               <p>{{ destination.stay | durationString:'brief' }}</p>
             </div>
          </div>
          <ion-option-button class="button-balanced" ng-click="modifyDestination(idx)">Change</ion-option-button>
@@ -69,7 +69,7 @@
           </ion-reorder-button>
       </ion-item>
    </ion-list>
-   <form ng-submit="addDestination($scope.newDestination, $scope.newDestinationDetails)">
+   <form ng-submit="addDestination(newDestination, newDestinationDetails)">
       <div class="item item-input padding">
          <!-- <label class="item-input-wrapper"> -->
          <input type="text" ng-autocomplete ng-model="newDestination" options="autocompleteOptions" details="newDestinationDetails" placeholder="Add a location"/>
@@ -78,7 +78,7 @@
             <i class="icon ion-plus"></i>
          </button>
          <button eat-click type="button" class="button button-neutral" ng-show="!!newDestination && !!newDestinationDetails" ng-click="clearDestination(); false">Clear</button>
-         <button eat-click type="button" class="button button-neutral" ng-hide="!!newDestination && !!newDestinationDetails" ng-click="toggleReordering(); false">Reorder</button>
+         <button eat-click type="button" class="button button-neutral" ng-hide="!trip.destinations || trip.destinations.length <= 0 || (!!newDestination && !!newDestinationDetails)" ng-click="toggleReordering(); false">Reorder</button>
       </div>
    </form>
    <br><br>

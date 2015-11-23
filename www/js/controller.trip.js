@@ -1,122 +1,107 @@
 angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synctrip.service.trips', 'ionic'])
 .controller('TripCtrl', ['$scope','$rootScope','$stateParams','$ionicModal','$ionicListDelegate','Trips', 'Gmap', 'currentUser', '$filter',
   function($scope, $rootScope, $stateParams, $ionicModal, $ionicListDelegate, Trips, Gmap, currentUser, $filter) {
-  var destinationDetailsWhitelist = ['address_components', 'formatted_address', 'geometry', 'icon', 'place_id', 'url', 'vicinity'];
-  var _MS_PER_MINUTE = 1000 * 60;
-  var _MS_PER_HOUR = 1000 * 60 * 60;
-  var _MS_PER_DAY = 1000 * 60 * 60 * 24;
-  var _S_PER_DAY = 60 * 60 * 24;
+    var destinationDetailsWhitelist = ['address_components', 'formatted_address', 'geometry', 'icon', 'place_id', 'url', 'vicinity'];
+    var _MS_PER_MINUTE = 1000 * 60;
+    var _MS_PER_HOUR = 1000 * 60 * 60;
+    var _MS_PER_DAY = 1000 * 60 * 60 * 24;
+    var _S_PER_DAY = 60 * 60 * 24;
 
-  $scope.currentUser = currentUser;
-  $scope.trip = Trips.find($stateParams.id);
-  $scope.editTripModal = null;
-  $scope.editDestinationModal = null;
-  $scope.newDestination=null;
-  $scope.newDestinationDetails=null;
-  $scope.reordering = false;
-  $scope.map = {
-    center: {
+    $scope.currentUser = currentUser;
+    $scope.trip = Trips.find($stateParams.id);
+    $scope.editTripModal = null;
+    $scope.editDestinationModal = null;
+    $scope.newDestination=null;
+    $scope.newDestinationDetails=null;
+    $scope.reordering = false;
+    $scope.map = {
+      center: {
         latitude: 45,
         longitude: -73
-    },
-    zoom: 4
-  };
-  $scope.autocompleteOptions = {
-    type: "(cities)"
-  }
+      },
+      zoom: 4
+    };
+    $scope.autocompleteOptions = {
+      type: "(cities)"
+    }
 
-  $scope.overviewItems = [
+    $scope.overviewItems = [
     { title: 'Distance', icon: 'ion-model-s', key: 'total_distance', type: 'distance' },
     { title: 'Travel Time', icon: 'ion-clock', key: 'total_travel_time', type: 'duration' },
     { title: 'Duration', icon: 'ion-calendar', key: 'total_duration', type: 'duration' }
-  ];
+    ];
 
-  $scope.doRefresh = function() {
-    $scope.trip = Trips.find($stateParams.id);
-    setTimeout(function() {
+    $scope.doRefresh = function() {
+      $scope.trip = Trips.find($stateParams.id);
+      setTimeout(function() {
        $scope.trip.$loaded().then(function() {
          $scope.calculateRoute();
          $scope.$broadcast('scroll.refreshComplete');
        });
-    }, 1000);
-  }
+     }, 1000);
+    }
 
-  $scope.hasNewDate = function(idx) {
-    var prev = this.trip.destinations[idx-1];
-    var cur = this.trip.destinations[idx];
+    $scope.hasNewDate = function(idx) {
+      var prev = this.trip.destinations[idx-1];
+      var cur = this.trip.destinations[idx];
 
-    if(!hasDate(cur)) return false;
-    if(!hasDate(prev)) return true;
+      if(!hasDate(cur)) return false;
+      if(!hasDate(prev)) return true;
 
-    return (prev.depart.date !== cur.arrive.date);
-  }
-  $scope.hasOldDate = function(idx) {
-    var prev = this.trip.destinations[idx-1];
-    var cur = this.trip.destinations[idx];
+      return (prev.depart.date !== cur.arrive.date);
+    }
+    $scope.hasOldDate = function(idx) {
+      var prev = this.trip.destinations[idx-1];
+      var cur = this.trip.destinations[idx];
 
-    if(!hasDate(cur)) return false;
-    if(!hasDate(prev)) return false;
+      if(!hasDate(cur)) return false;
+      if(!hasDate(prev)) return false;
 
-    return (prev.depart.date === cur.arrive.date);
-  }
+      return (prev.depart.date === cur.arrive.date);
+    }
 
-  function hasDate(dst) {
-    if(!dst) return false;
-    return ((dst.arrive && dst.arrive.date)
-      || (dst.depart && dst.depart.date));
-  }
+    function hasDate(dst) {
+      if(!dst) return false;
+      return ((dst.arrive && dst.arrive.date)
+        || (dst.depart && dst.depart.date));
+    }
 
  /****************************************************************************
   * Trip management
   */
- $scope.reorderDestinations = function(dst, fromIdx, toIdx){
+  $scope.reorderDestinations = function(dst, fromIdx, toIdx){
     this.trip.destinations.splice(toIdx, 0, this.trip.destinations.splice(fromIdx, 1)[0]);
     this.trip.$save().then(function() {
       $scope.calculateRoute()
     });
- }
- $scope.modifyDestination = function(idx) {
+  }
+  $scope.modifyDestination = function(idx) {
     $scope.modifyingIdx = idx;
     $ionicListDelegate.closeOptionButtons();
- }
- $scope.toggleReordering = function() {
-  $scope.reordering = !$scope.reordering;
- }
- $scope.clearDestination = function() {
-  this.reordering = false;
-  this.newDestination = null;
-  this.newDestinationDetails = null;
- }
+  }
+  $scope.toggleReordering = function() {
+    $scope.reordering = !$scope.reordering;
+  }
+  $scope.clearDestination = function() {
+    this.reordering = false;
+    this.newDestination = null;
+    this.newDestinationDetails = null;
+  }
   $scope.saveTravelMode = function() {
-    if($scope.destination.travel.type === 'none') {
-      // Split?
-        if( !($scope.legIdx === 0 && $scope.destinationIdx === 0) && $scope.destinationIdx !== 0) {
-        // Split!
-        console.log("PRE SPLIT: ", $scope.trip.destinations.length, $scope.trip.destinations.map(function(x){ return x.length; }).join(',') );
-        var newLeg = $scope.trip.destinations[$scope.legIdx].slice($scope.destinationIdx);
-        $scope.trip.destinations[$scope.legIdx] = $scope.trip.destinations[$scope.legIdx].slice(0,$scope.destinationIdx);
-        // Insert new leg
-        $scope.trip.destinations.splice($scope.legIdx+1, 0, newLeg);
-        console.log("POST SPLIT: ", $scope.trip.destinations.length, $scope.trip.destinations.map(function(x){ return x.length; }).join(',') );
-      }
-    } else {
-      // Merge?
-      if( $scope.legIdx > 0 && $scope.destinationIdx === 0) {
-        // Merge!
-        console.log("PRE MERGE: ", $scope.trip.destinations.length, $scope.trip.destinations.map(function(x){ return x.length; }).join(',') );
-        $scope.trip.destinations[$scope.legIdx-1] = $scope.trip.destinations[$scope.legIdx-1].concat($scope.trip.destinations[$scope.legIdx]);
-        // Remove old leg
-        var removed = $scope.trip.destinations.splice($scope.legIdx, 1);
-        console.log("REMOVED: ", removed)
-        console.log("POST MERGE: ", $scope.trip.destinations.length, $scope.trip.destinations.map(function(x){ return x.length; }).join(',') );
-      }
-    }
-    $scope.propagateTimings($scope.legIdx, $scope.destinationIdx);
+    var idx = $scope.destinationIdx;
+    var prev = $scope.trip.destinations[idx-1];
+    var cur = $scope.trip.destinations[idx];
+
+    // First try to propogate forward from previous destination
+    this.propagateTimingsForward(idx, prev);
+    // Then try to go the other way
+    this.propagateTimingsBack(idx-1, cur);
+
     return $scope.trip.$save();
   };
 
   $scope.addDestination = function(place, details, idx) {
-  $scope.reordering = false;
+    $scope.reordering = false;
     var that = this;
     if(!this.newDestinationDetails || !this.newDestinationDetails.formatted_address || this.newDestinationDetails.formatted_address.length == 0) return;
 
@@ -137,7 +122,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
       lng: details.geometry.location.lng(),
     }
 
-    var newDestinationInfo = { name: newDestinationDetails.name, details: details };
+    var newDestinationInfo = { name: newDestinationDetails.name, details: details, travel: {type: 'none'} };
     if(!idx || !this.trip.destinations[idx]) {
       this.trip.destinations.push(newDestinationInfo);
     } else {
@@ -159,80 +144,83 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     });
   }
   $scope.propagateTimings = function(idx) {
-     if(idx < 0 || idx >= this.trip.destinations.length) return true;
-     var dest = this.trip.destinations[idx];
-     if(idx > 0 && dest.arrive && dest.arrive.date) this.propagateTimingsBack(idx - 1, dest);
-     if(idx < (this.trip.destinations.length-1) && dest.depart && dest.depart.date) this.propagateTimingsForward(idx + 1, dest);
-     console.log("post propagation: ", this.trip.destinations);
-     var startDateTime, endDateTime;
-     angular.forEach(this.trip.destinations, function(dest) {
+   if(idx < 0 || idx >= this.trip.destinations.length) return true;
+
+   var dest = this.trip.destinations[idx];
+   if(idx > 0 && dest.arrive && dest.arrive.date) this.propagateTimingsBack(idx - 1, dest);
+   if(idx < (this.trip.destinations.length-1) && dest.depart && dest.depart.date) this.propagateTimingsForward(idx + 1, dest);
+
+   console.log("post propagation: ", this.trip.destinations);
+
+   var startDateTime, endDateTime;
+   angular.forEach(this.trip.destinations, function(dest) {
         // Get first date/time
         if(!startDateTime) {
-           if(dest.arrive && dest.arrive.date) {
-            startDateTime = new Date(dest.arrive.date + ' ' + (dest.arrive.time || ''));
-           } else if(dest.depart && dest.depart.date) {
-            startDateTime = new Date(dest.depart.date + ' ' + (dest.depart.time || ''));
-           }
+         if(dest.arrive && dest.arrive.date) {
+          startDateTime = new Date(dest.arrive.date + ' ' + (dest.arrive.time || ''));
+        } else if(dest.depart && dest.depart.date) {
+          startDateTime = new Date(dest.depart.date + ' ' + (dest.depart.time || ''));
         }
+      }
         // Get last date/time
         if(dest.depart && dest.depart.date) {
-            endDateTime = new Date(dest.depart.date + ' ' + (dest.depart.time || ''));
+          endDateTime = new Date(dest.depart.date + ' ' + (dest.depart.time || ''));
         } else if(dest.arrive && dest.arrive.date) {
-            endDateTime = new Date(dest.arrive.date + ' ' + (dest.arrive.time || ''));
+          endDateTime = new Date(dest.arrive.date + ' ' + (dest.arrive.time || ''));
         }
-     });
-     this.trip.total_duration = !(endDateTime && startDateTime) ? null : (endDateTime.valueOf() - startDateTime.valueOf())/1000;
-     return true;
-  }
-  $scope.propagateTimingsForward = function(idx, triggeringDestination) {
-     if(idx < 0 || idx >= this.trip.destinations.length || !triggeringDestination.depart || !triggeringDestination.depart.date) return true;
-     var destination = this.trip.destinations[idx];
+      });
+   this.trip.total_duration = !(endDateTime && startDateTime) ? null : (endDateTime.valueOf() - startDateTime.valueOf())/1000;
+   return true;
+ }
+ $scope.propagateTimingsForward = function(idx, triggeringDestination) {
+   if(idx < 0 || idx >= this.trip.destinations.length || !triggeringDestination.depart || !triggeringDestination.depart.date) return true;
+   var destination = this.trip.destinations[idx];
 
-     if(triggeringDestination.depart.time && triggeringDestination.depart.type !== 'propagate') {
-       destination.arrive = destination.arrive || {};
-       destination.arrive.disabled = true;
-       destination.arrive.type = 'propagate';
-       var prevDestDepartDateTime = new Date(triggeringDestination.depart.date + ' ' + (triggeringDestination.depart.time || ''))
-       var arriveDateTime = new Date(prevDestDepartDateTime.valueOf()
-                                     + ( (destination.travel.hours || 0)*60 + (destination.travel.minutes || 0))*60*1000
-                                    );
-       destination.arrive.date = $filter('date')(arriveDateTime, 'yyyy-MM-dd');
-       destination.arrive.time = $filter('date')(arriveDateTime, 'HH:mm');
-     }
-     this.trip.destinations[idx] = this.updateTiming(destination);
-     if(destination.depart && destination.depart.date) return this.propagateTimingsForward(idx + 1, destination);
-     else return true;
-  }
-  $scope.propagateTimingsBack = function(idx, triggeringDestination) {
-     if(idx < 0 || idx >= this.trip.destinations.length || !triggeringDestination.arrive || !triggeringDestination.arrive.date) return true;
-     var destination = this.trip.destinations[idx];
+   if(triggeringDestination.depart.time && triggeringDestination.depart.type !== 'propagate') {
+     destination.arrive = destination.arrive || {};
+     destination.arrive.disabled = true;
+     destination.arrive.type = 'propagate';
+     var prevDestDepartDateTime = new Date(triggeringDestination.depart.date + ' ' + (triggeringDestination.depart.time || ''))
+     var arriveDateTime = new Date(prevDestDepartDateTime.valueOf()
+       + ( (destination.travel.hours || 0)*60 + (destination.travel.minutes || 0))*60*1000
+       );
+     destination.arrive.date = $filter('date')(arriveDateTime, 'yyyy-MM-dd');
+     destination.arrive.time = $filter('date')(arriveDateTime, 'HH:mm');
+   }
+   this.trip.destinations[idx] = this.updateTiming(destination);
+   if(destination.depart && destination.depart.date) return this.propagateTimingsForward(idx + 1, destination);
+   else return true;
+ }
+ $scope.propagateTimingsBack = function(idx, triggeringDestination) {
+   if(idx < 0 || idx >= this.trip.destinations.length || !triggeringDestination.arrive || !triggeringDestination.arrive.date) return true;
+   var destination = this.trip.destinations[idx];
 
-     if(triggeringDestination.arrive.time && triggeringDestination.type !== 'propagate') {
-       destination.depart = destination.depart || {};
-       destination.depart.disabled = true;
-       destination.depart.type = 'propagate';
-       var prevDestDepartDateTime = new Date(triggeringDestination.arrive.date + ' ' + (triggeringDestination.arrive.time || ''))
-       var departDateTime = new Date(prevDestDepartDateTime.valueOf()
-                                     - ( (triggeringDestination.travel.hours || 0)*60 + (triggeringDestination.travel.minutes || 0))*60*1000
-                                    );
-       destination.depart.date = $filter('date')(departDateTime, 'yyyy-MM-dd');
-       destination.depart.time = $filter('date')(departDateTime, 'HH:mm');
-     }
-     this.trip.destinations[idx] = this.updateTiming(destination);
-     if(destination.arrive && destination.arrive.date) return this.propagateTimingsBack(idx - 1, destination);
-     else return true;
-  }
+   if(triggeringDestination.arrive.time && triggeringDestination.arrive.type !== 'propagate') {
+     destination.depart = destination.depart || {};
+     destination.depart.disabled = true;
+     destination.depart.type = 'propagate';
+     var prevDestDepartDateTime = new Date(triggeringDestination.arrive.date + ' ' + (triggeringDestination.arrive.time || ''))
+     var departDateTime = new Date(prevDestDepartDateTime.valueOf()
+       - ( (triggeringDestination.travel.hours || 0)*60 + (triggeringDestination.travel.minutes || 0))*60*1000
+       );
+     destination.depart.date = $filter('date')(departDateTime, 'yyyy-MM-dd');
+     destination.depart.time = $filter('date')(departDateTime, 'HH:mm');
+   }
+   this.trip.destinations[idx] = this.updateTiming(destination);
+   if(destination.arrive && destination.arrive.date) return this.propagateTimingsBack(idx - 1, destination);
+   else return true;
+ }
 
-  $ionicModal.fromTemplateUrl('templates/trips/edit.modal.html', {
-    scope: $scope,
-    animation: 'slide-in-up',
-    focusFirstInput: true
-  }).then(function (modal) {
-    $scope.editTripModal = modal;
-    $scope.$watch('[destination.arrive,destination.stay,destination.depart]', function() {
-      $scope.destination = $scope.updateTiming($scope.destination);
-    },true)
-  });
+ $ionicModal.fromTemplateUrl('templates/trips/edit.modal.html', {
+  scope: $scope,
+  animation: 'slide-in-up',
+  focusFirstInput: true
+}).then(function (modal) {
+  $scope.editTripModal = modal;
+  $scope.$watch('[destination.arrive,destination.stay,destination.depart]', function() {
+    $scope.destination = $scope.updateTiming($scope.destination);
+  },true)
+});
 
   //Cleanup the modal when we're done with it!
   $scope.$on('$destroy', function () {
@@ -284,12 +272,12 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
     // Clear auto-set values
     function xor(a,b) { return a ? !b : b; }
     if( xor(arriveSet, staySet) && typeof destination.depart === 'object' && destination.depart.type === 'auto') {
-       destination.depart = {};
-    } else if( xor(arriveSet, departSet) && typeof destination.stay === 'object' && destination.stay.type === 'auto') {
-       destination.stay = {};
-    } else if( xor(departSet, staySet) && typeof destination.arrive === 'object' && destination.arrive.type === 'auto') {
-       destination.arrive = {};
-    }
+     destination.depart = {};
+   } else if( xor(arriveSet, departSet) && typeof destination.stay === 'object' && destination.stay.type === 'auto') {
+     destination.stay = {};
+   } else if( xor(departSet, staySet) && typeof destination.arrive === 'object' && destination.arrive.type === 'auto') {
+     destination.arrive = {};
+   }
 
     // Auto-set values
     if(arriveSet && staySet) {
@@ -298,10 +286,10 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
       destination.depart.type = 'auto';
       var arriveDateTime = new Date(destination.arrive.date + ' ' + (destination.arrive.time || ''))
       var departDateTime = new Date(arriveDateTime.valueOf()
-                                    + (destination.stay.days || 0)*_MS_PER_DAY
-                                    + (destination.stay.hours || 0)*_MS_PER_HOUR
-                                    + (destination.stay.minutes || 0)*_MS_PER_MINUTE
-                                   );
+        + (destination.stay.days || 0)*_MS_PER_DAY
+        + (destination.stay.hours || 0)*_MS_PER_HOUR
+        + (destination.stay.minutes || 0)*_MS_PER_MINUTE
+        );
       destination.depart.date = $filter('date')(departDateTime, 'yyyy-MM-dd');
       destination.depart.time = $filter('date')(departDateTime, 'HH:mm');
     } else if(arriveSet && departSet && destination.arrive.time && destination.depart.time) {
@@ -319,35 +307,35 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
       destination.stay.hours = departHours - arriveHours;
       destination.stay.minutes = departMinutes - arriveMinutes;
       if(destination.stay.minutes < 0) {
-         destination.stay.hours--;
-         destination.stay.minutes += 60;
-      }
-      if(destination.stay.hours < 0) {
-         destination.stay.days--;
-         destination.stay.hours += 24;
-      }
+       destination.stay.hours--;
+       destination.stay.minutes += 60;
+     }
+     if(destination.stay.hours < 0) {
+       destination.stay.days--;
+       destination.stay.hours += 24;
+     }
 
-    } else if(staySet && departSet) {
-      if(!destination.arrive) destination.arrive = {};
-      destination.arrive.disabled = true;
-      destination.arrive.type = 'auto';
-      var departDateTime = new Date(destination.depart.date + ' ' + (destination.depart.time || ''))
-      var arriveDateTime = new Date(departDateTime.valueOf()
-                                    - (destination.stay.days || 0)*_MS_PER_DAY
-                                    - (destination.stay.hours || 0)*_MS_PER_HOUR
-                                    - (destination.stay.minutes || 0)*_MS_PER_MINUTE
-                                   );
-      destination.arrive.date = $filter('date')(arriveDateTime, 'yyyy-MM-dd');
-      destination.arrive.time = $filter('date')(arriveDateTime, 'HH:mm');
-    }
-    return destination;
+   } else if(staySet && departSet) {
+    if(!destination.arrive) destination.arrive = {};
+    destination.arrive.disabled = true;
+    destination.arrive.type = 'auto';
+    var departDateTime = new Date(destination.depart.date + ' ' + (destination.depart.time || ''))
+    var arriveDateTime = new Date(departDateTime.valueOf()
+      - (destination.stay.days || 0)*_MS_PER_DAY
+      - (destination.stay.hours || 0)*_MS_PER_HOUR
+      - (destination.stay.minutes || 0)*_MS_PER_MINUTE
+      );
+    destination.arrive.date = $filter('date')(arriveDateTime, 'yyyy-MM-dd');
+    destination.arrive.time = $filter('date')(arriveDateTime, 'HH:mm');
   }
+  return destination;
+}
 
   // init the popover
   $ionicModal.fromTemplateUrl('templates/destinations/travel.modal.html', {
     scope: $scope,
   }).then(function(modal) {
-console.log("initialize travel-select modal");
+    console.log("initialize travel-select modal");
     $scope.selectTravelModal = modal;
   });
   //Cleanup the popover when we're done with it!
@@ -386,7 +374,7 @@ console.log("initialize travel-select modal");
     return new Date(dt);
   }
 
-$scope.fakeMin = function() { return '2014-09-05'; }
+  $scope.fakeMin = function() { return '2014-09-05'; }
 
  /****************************************************************************
   * Navigation management
@@ -408,13 +396,15 @@ $scope.fakeMin = function() { return '2014-09-05'; }
     $scope.getRoute(function(response) {
       if(!!response) {
 
-        $scope.trip.destinations[0].travel = {};
+        $scope.trip.destinations[0].travel = null;
         $scope.trip.destinations[0].distance = '';
 
         $scope.trip.total_travel_time = 0;
         $scope.trip.total_distance = 0;
         for(var i=1; i < $scope.trip.destinations.length; i++) {
-          if(typeof $scope.trip.destinations[i].travel !== 'object' || !$scope.trip.destinations[i].travel) { $scope.trip.destinations[i].travel = {}; }
+          if(typeof $scope.trip.destinations[i].travel !== 'object' || !$scope.trip.destinations[i].travel) {
+            $scope.trip.destinations[i].travel  = (i <= 0) ? null : {type: 'none'};
+          }
           var duration = response.routes[0].legs[i-1].duration.value;
           $scope.trip.destinations[i].travel.hours = Math.floor(duration/60/60)
           $scope.trip.destinations[i].travel.minutes = Math.floor(duration/60) % 60;
