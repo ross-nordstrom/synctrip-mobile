@@ -37,7 +37,7 @@ angular.module('synctrip.filters', [])
            days = Math.floor(seconds/60/60/24);
            hours = Math.floor(seconds/60/60) % 24;
            min = Math.floor(seconds/60) % 60;
-        } else if(typeof secondsOrObject === 'object') {
+        } else if(typeof secondsOrObject === 'object' && secondsOrObject) {
            days = secondsOrObject.days || 0;
            hours = secondsOrObject.hours || 0;
            min = secondsOrObject.minutes || 0;

@@ -1,6 +1,6 @@
 angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synctrip.service.trips', 'ionic'])
-.controller('TripCtrl', ['$scope','$rootScope','$stateParams','$ionicModal','$ionicListDelegate','Trips', 'Gmap', 'currentUser', '$filter',
-  function($scope, $rootScope, $stateParams, $ionicModal, $ionicListDelegate, Trips, Gmap, currentUser, $filter) {
+.controller('TripCtrl', ['$scope','$rootScope','$stateParams','$ionicModal','$ionicListDelegate','$q','Trips', 'Gmap', 'currentUser', '$filter',
+  function($scope, $rootScope, $stateParams, $ionicModal, $ionicListDelegate, $q, Trips, Gmap, currentUser, $filter) {
     var destinationDetailsWhitelist = ['address_components', 'formatted_address', 'geometry', 'icon', 'place_id', 'url', 'vicinity'];
     var _MS_PER_MINUTE = 1000 * 60;
     var _MS_PER_HOUR = 1000 * 60 * 60;
@@ -48,7 +48,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
       if(!hasDate(cur)) return false;
       if(!hasDate(prev)) return true;
 
-      return (prev.depart.date !== cur.arrive.date);
+      return ((prev.depart && prev.depart.date) !== (cur.arrive && cur.arrive.date));
     }
     $scope.hasOldDate = function(idx) {
       var prev = this.trip.destinations[idx-1];
@@ -57,7 +57,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
       if(!hasDate(cur)) return false;
       if(!hasDate(prev)) return false;
 
-      return (prev.depart.date === cur.arrive.date);
+      return ( (prev.depart && prev.depart.date) === (cur.arrive && cur.arrive.date));
     }
 
     function hasDate(dst) {
@@ -129,7 +129,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
       lng: details.geometry.location.lng(),
     }
 
-    var newDestinationInfo = { name: newDestinationDetails.name, details: details, travel: {type: 'none'} };
+    var newDestinationInfo = { name: newDestinationDetails.name, details: details, travel: {type: 'drive'} };
     if(!idx || !this.trip.destinations[idx]) {
       this.trip.destinations.push(newDestinationInfo);
     } else {
@@ -386,7 +386,8 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
  /****************************************************************************
   * Navigation management
   */
-  $scope.getRoute = function(destinations, callback) {
+  $scope.getRoute = function(destinations) {
+    var deferred = $q.defer();
     var count = 0;
     if(destinations && (count = destinations.length) > 1) {
       var origin = destinations[0].details.formatted_address;
@@ -394,19 +395,26 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
       var waypoints = destinations.slice(1, count - 1).map(function(destination) {
         return destination.details.formatted_address;
       });
-      Gmap.getRoute(origin, destination, waypoints, callback);
+      Gmap.getRoute(origin, destination, waypoints, function(response) {
+        if(!response) return deferred.reject(new Error('No route found'));
+        if(response.status !== 'OK') return deferred.reject();
+        return deferred.resolve(response);
+      });
+      return deferred;
     }
   }
 
   $scope.calculateRoute = function() {
     // First split into independent, contiguous driving portions
-    var info = $scope.trip.destinations.reduce(function(acc, dst) {
+    var info = $scope.trip.destinations.reduce(function(acc, dst, idx) {
 
       // End of prev portion. Beginning of next
       if(!dst.travel || dst.travel.type !== 'drive') {
         if(acc.thisPortion.length > 1) {
           acc.portions.push(acc.thisPortion);
+          acc.portionIdxs.push(acc.thisPortionIdx);
           acc.thisPortion = [dst];
+          acc.thisPortionIdx = idx;
         }
         return acc;
       }
@@ -414,41 +422,67 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
       // Continues from previous
       acc.thisPortion.push(dst);
       return acc;
-    }, {thisPortion:[], portions: []});
+    }, {thisPortion:[], thisPortionIdx: 0, portions: [], portionIdxs: []});
 
     if(info.thisPortion.length > 1) {
       info.portions.push(info.thisPortion);
+      info.portionIdxs.push(info.thisPortionIdx);
     }
-    var portions = $scope.trip.destinations;
-    // var portions = info.portions;
+    var portions = info.portions;
+    var portionIdxs = info.portionIdxs;
 
     // TODO: Make N of these calls for N legs of contiguous driving destinations
-    $scope.getRoute(portions, function(response) {
-      if(!!response) {
+    var routePromises = portions.map(function getPortionRoute(portion, idx) {
+      var portionIdx = portionIdxs[idx];
 
-        $scope.trip.destinations[0].travel = null;
-        $scope.trip.destinations[0].distance = '';
+      return $scope.getRoute(portion).promise
+      .catch(function(err) {
+        // Swallow Gmap errors...
+      })
+      .then(function(response) {
+        var travelInfo = {total_travel_time: 0, total_distance: 0};
+        if(!response) return travelInfo;
 
-        $scope.trip.total_travel_time = 0;
-        $scope.trip.total_distance = 0;
-        for(var i=1; i < $scope.trip.destinations.length; i++) {
+        $scope.trip.destinations[portionIdx].travel = {type: 'none'};
+        $scope.trip.destinations[portionIdx].distance = '';
+
+        travelInfo.total_travel_time = 0;
+        travelInfo.total_distance = 0;
+        for(var j=1; j < portion.length; j++) {
+          var i = portionIdx + j; // Use the portion offset
           if(typeof $scope.trip.destinations[i].travel !== 'object' || !$scope.trip.destinations[i].travel) {
-            $scope.trip.destinations[i].travel  = (i <= 0) ? null : {type: 'none'};
+            $scope.trip.destinations[i].travel  = (j <= 0) ? null : {type: 'none'};
           }
-          var duration = response.routes[0].legs[i-1].duration.value;
+          var duration = response.routes[0].legs[j-1].duration.value;
           $scope.trip.destinations[i].travel.hours = Math.floor(duration/60/60)
           $scope.trip.destinations[i].travel.minutes = Math.floor(duration/60) % 60;
-          $scope.trip.destinations[i].travel.distance = $filter('metersToMiles')(response.routes[0].legs[i-1].distance.value);
+          $scope.trip.destinations[i].travel.distance = $filter('metersToMiles')(response.routes[0].legs[j-1].distance.value);
           $scope.trip.destinations[i].travel.type = 'drive';
 
-          $scope.trip.total_travel_time += response.routes[0].legs[i-1].duration.value;
-          $scope.trip.total_distance += response.routes[0].legs[i-1].distance.value;
+          travelInfo.total_travel_time += response.routes[0].legs[j-1].duration.value;
+          travelInfo.total_distance += response.routes[0].legs[j-1].distance.value;
+
+          return travelInfo;
         }
 
+      });
+});
 
-        $scope.trip.$save();
-      }
-    });
+return $q.all(routePromises)
+.then(function(routeResults) {
+  console.log("Updated routes for all legs of trip: ", routeResults);
+  $scope.trip.total_distance = 0;
+  $scope.trip.total_travel_time = 0;
+
+  routeResults.forEach(function accumulateTotalTravelInfo(travelInfo) {
+    $scope.trip.total_distance += travelInfo.total_distance
+    $scope.trip.total_travel_time += travelInfo.total_travel_time;
+  })
+  $scope.trip.$save();
+})
+.catch(function(err) {
+  console.log("Problem updating routes for all legs of trip: ", err);
+});
   } // calculateRoute()
 
   $scope.updateDirections = function() {
