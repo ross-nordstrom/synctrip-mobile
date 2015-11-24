@@ -1,7 +1,7 @@
 [![Stories in Ready](https://badge.waffle.io/ross-nordstrom/synctrip-mobile.png?label=ready&title=Ready)](https://waffle.io/ross-nordstrom/synctrip-mobile)
 Ionic App Base
 =====================
- 
+
 A starting project for Ionic that optionally supports
 using custom SCSS.
 
