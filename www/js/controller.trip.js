@@ -410,7 +410,7 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
 
       // End of prev portion. Beginning of next
       if(!dst.travel || dst.travel.type !== 'drive') {
-        if(acc.thisPortion.length > 1) {
+        if(acc.thisPortion.length >= 1) {
           acc.portions.push(acc.thisPortion);
           acc.portionIdxs.push(acc.thisPortionIdx);
           acc.thisPortion = [dst];
@@ -433,17 +433,19 @@ angular.module('synctrip.controller.trip', ['simpleLogin', 'google-maps', 'synct
 
     // TODO: Make N of these calls for N legs of contiguous driving destinations
     var routePromises = portions.map(function getPortionRoute(portion, idx) {
+      if(portion.length < 2) return {total_travel_time: 0, total_distance: 0};
       var portionIdx = portionIdxs[idx];
 
       return $scope.getRoute(portion).promise
       .catch(function(err) {
         // Swallow Gmap errors...
+        var foo = err;
       })
       .then(function(response) {
         var travelInfo = {total_travel_time: 0, total_distance: 0};
         if(!response) return travelInfo;
 
-        $scope.trip.destinations[portionIdx].travel = {type: 'none'};
+        $scope.trip.destinations[portionIdx].travel = (portionIdx <= 0) ? null : angular.extend({type: 'none'},$scope.trip.destinations[portionIdx].travel);
         $scope.trip.destinations[portionIdx].distance = '';
 
         travelInfo.total_travel_time = 0;
