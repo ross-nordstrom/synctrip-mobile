@@ -10,20 +10,21 @@
       <div class="list">
        <ion-radio ng-model="destination.travel.type" value="drive"><i class="icon ion-model-s"></i>&nbsp;&nbsp;&nbsp;Drive</ion-radio>
        <ion-radio ng-model="destination.travel.type" value="fly"><i class="icon ion-plane"></i>&nbsp;&nbsp;&nbsp;Fly</ion-radio>
+       <ion-radio ng-model="destination.travel.type" value="train"><i class="icon ion-earth"></i>&nbsp;&nbsp;&nbsp;Train</ion-radio>
        <ion-radio ng-model="destination.travel.type" value="none"><i class="icon ion-ios7-more-outline"></i>&nbsp;&nbsp;&nbsp;[None]</ion-radio>
        <div ng-hide="destination.travel.type === 'none'">
-        <label class="item item-input item-floating-label {{ false ? 'item-stable disabled' : '' }}">
+        <label class="item item-input item-floating-label {{ false ? 'item-stable disabled' : '' }}" ng-show="destination.travel.type === 'drive'">
           <span>Distance</span>
           <input type="number" placeholder="Distance" name="travelDistance" ng-model="destination.travel.distance" ng-disabled="true">
         </label>
         <div class="item item-input {{ false ? 'item-stable disabled' : '' }}" ng-hide="destinationIdx === 0">
           <label>
             <span class="input-label">Travel Time</span>
-            <input eat-click type="number" placeholder="Hours" name="durationHours" ng-model="destination.travel.hours" ng-disabled="destination.travel.type !== 'fly'">
+            <input eat-click type="number" placeholder="Hours" name="durationHours" ng-model="destination.travel.hours" ng-disabled="destination.travel.type === 'drive'">
           </label>
           <label>
             <span class="input-label">&nbsp;</span>
-            <input type="number" placeholder="Minutes" name="durationMinutes" ng-model="destination.travel.minutes" ng-disabled="destination.travel.type !== 'fly'">
+            <input type="number" placeholder="Minutes" name="durationMinutes" ng-model="destination.travel.minutes" ng-disabled="destination.travel.type === 'drive'">
           </label>
         </div>
       </div>

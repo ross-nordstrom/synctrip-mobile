@@ -1,5 +1,7 @@
 'use strict';
 
+var METERS_TO_MILES = 0.000621371192;
+
 /* Filters */
 
 angular.module('synctrip.filters', [])
@@ -73,7 +75,6 @@ angular.module('synctrip.filters', [])
    })
 
    .filter('metersToMiles', function() {
-      var METERS_TO_MILES = 0.000621371192;
       return function(meters) {
          meters = parseFloat(meters);
         var accuracy = meters > 30 ? 1 : 10;
@@ -83,11 +84,9 @@ angular.module('synctrip.filters', [])
    })
 
    .filter('distanceString', function() {
-      var METERS_TO_MILES = 0.000621371192;
-      return function(meters) {
-         meters = parseFloat(meters);
-        var accuracy = meters > 30 ? 1 : 10;
-        var str = (Math.round( meters * METERS_TO_MILES * accuracy ) / accuracy) + ' mi';
+      return function(miles) {
+        if(miles >= 3000) miles = (Math.round(miles/100)/10+'K');
+        var str = miles + ' mi';
         return str;
       }
    })
