@@ -16,9 +16,9 @@
         </a>
         <label class="item item-input item-floating-label">
           <span class="input-label">About</span>
-          <input type="text" placeholder="About" ng-model="destination.info">
+          <input type="text" placeholder="About" ng-model="destination.info" autofocus>
         </label>
-        <div class="item item-input {{destination.arrive.disabled ? 'item-stable disabled' : '' }}" ng-hide="destinationIdx === 0">
+        <div class="item item-input {{destination.arrive.disabled ? 'item-stable disabled' : '' }}" ng-hide="destinationIdx === 0"  ng-click="destination.arrive.disabled = false; destination.arrive.type = null">
           <label>
             <span class="input-label">Arrive Date</span>
             <input type="date" placeholder="Arrive Date" name="arriveDate" max="{{destination.depart.date}}" ng-model="destination.arrive.date" ng-disabled="destination.arrive.disabled" min="{{fakeMin()}}">
@@ -61,7 +61,7 @@
             <span class="input-label">Depart Time</span>
             <input type="time" placeholder="Depart" ng-model="destination.depart.time" ng-disabled="destination.depart.disabled">
           </label>
-          <p style="white-space:normal;" ng-show="destination.depart.disabled">
+          <p style="white-space:normal;" ng-show="destination.depart.disabled" ng-click="destination.depart.disabled = false; destination.depart.type = null">
             Automatically set based on
             <span ng-if="destination.depart.type === 'auto'">Arrive &amp; Duration.</span>
             <span ng-if="destination.depart.type === 'propagate'">neighboring destination.</span>

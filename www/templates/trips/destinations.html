@@ -1,81 +1,95 @@
 <ion-view title="Trip Destinations">
-<ion-content class="padding">
-   <ion-refresher
-     pulling-text="Pull to refresh..."
-     on-refresh="doRefresh()">
-   </ion-refresher>
-   <div class="row padding">
-     <div class="col" ng-repeat="(idx,item) in overviewItems">
-      <a class="item item-icon-left">
+<ion-content>
+<ion-refresher
+pulling-text="Pull to refresh..."
+on-refresh="doRefresh()">
+</ion-refresher>
+<div class="row padding">
+   <div class="col" ng-repeat="(idx,item) in overviewItems">
+      <a class="item item-icon-left hidden-sm">
          <i class="icon {{item.icon}}"></i>
          <h2>{{item.title}}</h2>
          <p>{{(trip[item.key] || '') | prettyUnits:item.type}}</p>
       </a>
+      <a class="item visible-sm">
+         <h2>{{item.title}}</h2>
+         <p>{{(trip[item.key] || '') | prettyUnits:item.type}}</p>
+      </a>
+   </div>
+</div>
+<ion-list class="list-no-borders" can-swipe="true" show-reorder="reordering && !newDestination">
+<ion-item ng-repeat="(idx,destination) in trip.destinations">
+<div eat-click class="row row-dense" ng-show="destination.travel">
+   <div class="col col-offset-10">
+      <div class="item item-icon-left" ng-show="destination.travel.type === 'none'">
+         <i class="icon ion-ios7-more-outline" ng-click="selectTravel(idx)"></i>
+         <p></p>
+      </div>
+      <div class="item item-icon-left" ng-hide="destination.travel.type === 'none'">
+         <span ng-switch on="destination.travel.type" ng-click="selectTravel(idx)">
+            <i ng-switch-when="drive" class="icon ion-model-s"></i>
+            <i ng-switch-when="fly" class="icon ion-plane"></i>
+            <i ng-switch-when="train" class="icon ion-earth"></i>
+            &nbsp;
+            <p>
+               <span ng-show="destination.travel.distance">
+                  {{destination.travel.distance }} mi</span><span ng-show="(destination.travel.hours || destination.travel.minutes) && destination.travel.distance">, </span>
+               <span ng-show="destination.travel.hours || destination.travel.minutes">{{destination.travel | durationString:'minimal'}}</span>
+            </p>
+         </span>
+         </div>
       </div>
    </div>
-   <ion-list class="list-no-borders" can-swipe="true">
-      <ion-item ng-repeat="(idx,destination) in trip.destinations">
-         <div eat-click class="row row-dense" ng-show="destination.travel.distance || destination.travel.hours || destination.travel.minutes">
-            <div class="col col-offset-10" ng-show="destination.travel.distance || destination.travel.hours || destination.travel.minutes">
-               <div class="item item-icon-left" ng-show="destination.travel.type === 'none'">
-                  <i class="icon ion-minus" ng-click="selectTravel(idx)"></i>
-                  <p>[N/A]</p>
-               </div>
-               <div class="item item-icon-left" ng-hide="destination.travel.type === 'none'">
-                  <i class="icon {{ destination.travel.type === 'fly' ? 'ion-plane' : 'ion-model-s' }}" ng-click="selectTravel(idx)"></i>
-                  <p>
-                     <span ng-show="destination.travel.distance">
-                        {{destination.travel.distance }} mi</span><span ng-show="(destination.travel.hours || destination.travel.minutes) && destination.travel.distance">, </span>
-                     <span ng-show="destination.travel.hours || destination.travel.minutes">{{destination.travel | durationString:'minimal'}}</span>
-                  </p>
-               </div>
-            </div>
+   <div class="row" ng-show="(idx === modifyingIdx)">
+      <form ng-submit="addDestination(newDestination, newDestinationDetails, idx)" style="width:100%;">
+         <div class="item item-input padding">
+            <!-- <label class="item-input-wrapper"> -->
+            <input type="text" ng-autocomplete ng-model="newDestination" options="autocompleteOptions" details="newDestinationDetails" placeholder="Change location"/>
+            <!-- </label> -->
+            <button class="button button-balanced" ng-show="!!newDestination && !!newDestinationDetails">
+               <i class="icon ion-plus"></i>
+            </button>
          </div>
-         <div class="row" ng-show="(idx === modifyingIdx)">
-            <form ng-submit="addDestination(newDestination, newDestinationDetails, idx)" style="width:100%;">
-               <div class="item item-input padding">
-                  <!-- <label class="item-input-wrapper"> -->
-                  <input type="text" ng-autocomplete ng-model="newDestination" options="autocompleteOptions" details="newDestinationDetails" placeholder="Change location"/>
-                  <!-- </label> -->
-                  <button class="button button-balanced" ng-show="!!newDestination && !!newDestinationDetails">
-                     <i class="icon ion-plus"></i>
-                  </button>
-               </div>
-            </form>
-         </div>
-         <div class="row" ng-hide="(idx === modifyingIdx)"  ng-click="editDestination(idx)">
-            <div class="col col-10 calendar-stack" ng-show="destination.arrive.date || destination.depart.date">
-               <i class="icon ion-calendar"></i>
-               <h4 ng-show="destination.arrive.date">{{ destination.arrive.date | date:'dd' }}</h4>
-               <h4 ng-hide="destination.arrive.date">{{ destination.depart.date | date:'dd' }}</h4>
-            </div>
-            <div class="col col-50">
-               <h2>{{destination.name}}</h2>
-               <p>{{destination.info || destination.details.formatted_address}}</p>
-            </div>
-            <div class="col-20" ng-if="destination.stay.days || destination.stay.hours || destination.stay.minutes">
-               <i class="icon ion-ios7-clock-outline"></i>
-               <p>{{ destination.stay | durationString:'brief' }}</p>
-            </div>
-            <div class="col hidden-xs" ng-show="destination.arrive.time || destination.depart.time">
-               <p ng-if="destination.arrive.time"><strong>&nbsp;Arrive:</strong> {{ arriveDateTime(destination) | date:'h:mm a' }}</p>
-               <p ng-if="destination.depart.time"><strong>Depart:</strong> {{ departDateTime(destination) | date:'h:mm a' }}</p>
-            </div>
-         </div>
-         <ion-option-button class="button-positive" ng-click="modifyDestination(idx)">Change</ion-option-button>
-         <ion-option-button class="button-assertive" ng-click="removeDestination(idx)">Delete</ion-option-button>
-      </ion-item>
-   </ion-list>
-   <form ng-submit="addDestination($scope.newDestination, $scope.newDestinationDetails)">
-      <div class="item item-input padding">
-         <!-- <label class="item-input-wrapper"> -->
-         <input type="text" ng-autocomplete ng-model="newDestination" options="autocompleteOptions" details="newDestinationDetails" placeholder="Add a location"/>
-         <!-- </label> -->
-         <button class="button button-balanced" ng-show="!!newDestination && !!newDestinationDetails">
-            <i class="icon ion-plus"></i>
-         </button>
+      </form>
+   </div>
+   <div class="row" ng-hide="(idx === modifyingIdx)"  ng-click="editDestination(idx)">
+      <div class="col col-10 calendar-stack" ng-show="hasOldDate(idx)"></div>
+      <div class="col col-10 calendar-stack" ng-show="hasNewDate(idx)">
+         <i class="icon ion-calendar"></i>
+         <h4 ng-show="destination.arrive.date">{{ destination.arrive.date | date:'dd' }}</h4>
+         <h4 ng-show="!destination.arrive.date && destination.depart.date">{{ destination.depart.date | date:'dd' }}</h4>
       </div>
-   </form>
-   <br><br>
+      <div class="col col-50">
+         <h2>{{destination.name}}</h2>
+         <p>{{destination.info || destination.details.formatted_address}}</p>
+      </div>
+      <div class="col-25" ng-show="destination.arrive.time || destination.depart.time">
+         <p ng-if="destination.arrive.time"><strong>&nbsp;Arrive:</strong> {{ arriveDateTime(destination) | date:'h:mm a' }}</p>
+         <p ng-if="destination.depart.time"><strong>Depart:</strong> {{ departDateTime(destination) | date:'h:mm a' }}</p>
+      </div>
+      <div class="col hidden-xs" ng-if="destination.stay.days || destination.stay.hours || destination.stay.minutes">
+         <i class="icon ion-ios7-clock-outline"></i>
+         <p>{{ destination.stay | durationString:'brief' }}</p>
+      </div>
+   </div>
+   <ion-option-button class="button-balanced" ng-click="modifyDestination(idx)">Change</ion-option-button>
+   <ion-option-button class="button-assertive" ng-click="removeDestination(idx)">Delete</ion-option-button>
+   <ion-reorder-button class="ion-navicon" on-reorder="reorderDestinations(destination, $fromIndex, $toIndex)">
+</ion-reorder-button>
+</ion-item>
+</ion-list>
+<form ng-submit="addDestination(newDestination, newDestinationDetails)">
+   <div class="item item-input padding">
+      <!-- <label class="item-input-wrapper"> -->
+      <input type="text" ng-autocomplete ng-model="newDestination" options="autocompleteOptions" details="newDestinationDetails" placeholder="Add a location"/>
+      <!-- </label> -->
+      <button class="button button-balanced" ng-show="!!newDestination && !!newDestinationDetails">
+         <i class="icon ion-plus"></i>
+      </button>
+      <button eat-click type="button" class="button button-neutral" ng-show="!!newDestination && !!newDestinationDetails" ng-click="clearDestination(); false">Clear</button>
+      <button eat-click type="button" class="button button-neutral" ng-hide="!trip.destinations || trip.destinations.length <= 0 || (!!newDestination && !!newDestinationDetails)" ng-click="toggleReordering(); false">Reorder</button>
+   </div>
+</form>
+<br><br>
 </ion-content>
 </ion-view>

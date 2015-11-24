@@ -177,26 +177,26 @@ img.banner {
 .visible-md { display: none; }
 .visible-lg { display: none; }
 
-/* Large desktop */
-@media (min-width: 1200px) {
-  .visible-lg { display: inherit; }
-  .hidden-lg { display: none; }
-}
-
-/* Portrait tablet to landscape and desktop */
-@media (min-width: 768px) and (max-width: 979px) {
-  .visible-md { display: inherit; }
-  .hidden-md { display: none; }
+/* Landscape phones and down */
+@media (max-width: 567px) {
+  .visible-xs { display: inherit; }
+  .hidden-xs { display: none !important; }
 }
 
 /* Landscape phone to portrait tablet */
-@media (max-width: 767px) {
+@media (max-width: 567px) {
   .visible-sm { display: inherit; }
-  .hidden-sm { display: none; }
+  .hidden-sm { display: none !important; }
 }
 
-/* Landscape phones and down */
-@media (max-width: 480px) {
-  .visible-xs { display: inherit; }
-  .hidden-xs { display: none; }
+/* Portrait tablet to landscape and desktop */
+@media (min-width: 567px) and (max-width: 767px) {
+  .visible-md { display: inherit; }
+  .hidden-md { display: none !important; }
+}
+
+/* Large desktop */
+@media (min-width: 767px) {
+  .visible-lg { display: inherit; }
+  .hidden-lg { display: none !important; }
 }
